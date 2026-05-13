@@ -1,0 +1,2674 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROSTERapp</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #3a9c3a;
+      --green-dark: #2d7a2d;
+      --green-light: #4db84d;
+      --red: #ff4d4d;
+      --blue: #00c8ff;
+      --bg: #1c1c1c;
+      --bg2: #242424;
+      --bg3: #2e2e2e;
+      --bg4: #383838;
+      --stats-bg: #8a8a8a;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --text-dim: #bbb;
+      --border: #3a3a3a;
+      --accent: #5bc05b;
+      --sidebar-w: 38px;
+      --header-h: 44px;
+      --stats-h: 220px;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      height: var(--header-h);
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,.5);
+    }
+    #header h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #fff;
+    }
+    #header-actions {
+      position: absolute;
+      right: 14px;
+      display: flex;
+      gap: 8px;
+    }
+    .hbtn {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .7rem;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: .05em;
+      transition: background .15s;
+    }
+    .hbtn:hover { background: rgba(255,255,255,.28); }
+
+    /* ── BODY LAYOUT ── */
+    #layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── FOOTER ── */
+    #footer {
+      padding: 8px 0;
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+
+    #footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    #footer a:hover {
+      color: var(--text);
+    }
+
+    #footer .bmc-wrapper {
+      display: inline-block;
+      transform: scale(0.6);
+      transform-origin: center;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      padding-top: 20px;
+      gap: 8px;
+    }
+    .sidebar-btn {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .12em;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 10px 8px;
+      border-radius: 3px;
+      transition: color .15s, background .15s;
+      user-select: none;
+    }
+    .sidebar-btn:hover { color: var(--accent); background: var(--bg3); }
+    .sidebar-btn.active { color: var(--accent); }
+
+    /* ── MAIN PANEL ── */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── MEMBERS SECTION ── */
+    #members-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg2);
+    }
+
+    #members-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .1em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    #search-input {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: .82rem;
+      padding: 5px 10px;
+      border-radius: 3px;
+      width: 220px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #search-input:focus { border-color: var(--green); }
+    #search-input::placeholder { color: var(--text-muted); }
+
+    .toolbar-sep { width: 1px; height: 20px; background: var(--border); }
+
+    #filter-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex: 1;
+      align-items: center;
+    }
+    .filter-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--green-dark);
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .68rem;
+      padding: 3px 8px 3px 10px;
+      border-radius: 12px;
+    }
+    .filter-tag-remove {
+      cursor: pointer;
+      opacity: .7;
+      font-size: .85rem;
+      line-height: 1;
+    }
+    .filter-tag-remove:hover { opacity: 1; }
+
+    #active-season-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--bg);
+      border-bottom: 2px solid var(--green);
+      padding: 5px 14px;
+      flex-shrink: 0;
+    }
+    #active-season-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--green-light);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    #upload-btn {
+      background: var(--green);
+      border: none;
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .7rem;
+      padding: 6px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: .05em;
+      transition: background .15s;
+    }
+    #upload-btn:hover { background: var(--green-light); }
+
+    #clear-btn {
+      background: var(--red);
+      border: none;
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .7rem;
+      padding: 6px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: .05em;
+      transition: background .15s;
+    }
+
+    #table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+    #table-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+    #table-wrap::-webkit-scrollbar-track { background: var(--bg2); }
+    #table-wrap::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+    #members-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+    #members-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    #members-table th {
+      background: var(--bg3);
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      font-weight: 400;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 9px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    #members-table th:hover { color: var(--text); }
+    #members-table th.sort-asc::after { content: " ↑"; color: var(--accent); }
+    #members-table th.sort-desc::after { content: " ↓"; color: var(--accent); }
+
+    #members-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    #members-table tbody tr:hover { background: var(--bg3); }
+
+    .cat-badge {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .no-data {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 60px 20px;
+      font-size: .85rem;
+    }
+    .no-data span {
+      display: block;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      opacity: .3;
+    }
+
+    /* ── STATS SECTION ── */
+    #stats-section {
+      height: var(--stats-h);
+      background: var(--bg);
+      border-top: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    #stats-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 14px;
+      background: rgba(0,0,0,.15);
+      border-bottom: 1px solid rgba(0,0,0,.2);
+      flex-shrink: 0;
+    }
+    #stats-header .toolbar-label { color: rgba(255,255,255,.7); }
+
+    #season-tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .season-tab {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem;
+      padding: 4px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      color: rgba(255,255,255,.7);
+      background: rgba(0,0,0,.15);
+      border: 1px solid rgba(255,255,255,.15);
+      transition: all .15s;
+      letter-spacing: .04em;
+    }
+    .season-tab:hover { background: rgba(0,0,0,.25); color: #fff; }
+    .season-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
+
+    #stats-clear-btn {
+      margin-left: auto;
+      background: rgba(0,0,0,.2);
+      border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.7);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: .05em;
+    }
+    #stats-clear-btn:hover { color: #fff; background: rgba(0,0,0,.3); }
+
+    #stats-grid {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      flex: 1;
+      align-items: flex-start;
+    }
+    #stats-grid::-webkit-scrollbar { height: 4px; }
+    #stats-grid::-webkit-scrollbar-thumb { background: rgba(0,0,0,.3); border-radius: 2px; }
+
+    .stat-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.2);
+      border: 2px solid rgba(255,255,255,.15);
+      border-radius: 6px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all .15s;
+      min-width: 90px;
+      flex-shrink: 0;
+      user-select: none;
+      position: relative;
+    }
+    .stat-card:hover { background: rgba(0,0,0,.35); border-color: rgba(255,255,255,.35); }
+    .stat-card.selected {
+      border-color: var(--green);
+      background: rgba(58,156,58,.25);
+    }
+    .stat-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: .65rem;
+      color: var(--accent);
+    }
+    .stat-cat-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .stat-count {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1;
+    }
+    .stat-years {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: .65rem;
+      color: rgba(255,255,255,.6);
+      margin-top: 4px;
+      text-align: center;
+    }
+    .stat-card-uncat {
+      border-color: rgba(255,100,100,.3);
+    }
+    .stat-card-uncat .stat-cat-name { color: rgba(255,180,180,.9); }
+
+    .stat-main-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .stat-inactive {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: .75;
+    }
+
+    .stat-gender-row {
+      margin-top: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .95rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .stat-gender-row .male {
+      color: var(--blue);
+    }
+
+    .stat-gender-row .female {
+      color: var(--red);
+    }
+
+    .stat-gender-row .sep {
+      color: var(--text-muted);
+    }
+
+    /* ── MODAL BASE ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 720px;
+      max-width: 95vw;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
+      transform: translateY(10px);
+      transition: transform .2s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .modal-header h2 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .9rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      color: var(--text);
+      flex: 1;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg4); }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .modal-body::-webkit-scrollbar { width: 5px; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    /* ── CATEGORY EDITOR ── */
+    #editor-seasons-bar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .editor-season-tab {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem;
+      padding: 5px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      transition: all .15s;
+    }
+    .editor-season-tab:hover { color: var(--text); }
+    .editor-season-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
+    .editor-season-tab-remove {
+      display: inline-block;
+      margin-left: 6px;
+      opacity: .5;
+      cursor: pointer;
+    }
+    .editor-season-tab-remove:hover { opacity: 1; }
+
+    #add-season-form {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    #new-season-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .78rem;
+      padding: 5px 10px;
+      border-radius: 3px;
+      width: 80px;
+      outline: none;
+    }
+    #new-season-input:focus { border-color: var(--green); }
+
+    .editor-cats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .84rem;
+    }
+    .editor-cats-table th {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 7px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .editor-cats-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .editor-cats-table tr:last-child td { border-bottom: none; }
+    .year-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .8rem;
+      padding: 4px 8px;
+      border-radius: 3px;
+      width: 75px;
+      outline: none;
+    }
+    .year-input:focus { border-color: var(--green); }
+    .year-input.open-end { width: 75px; }
+
+    .cat-name-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .8rem;
+      padding: 4px 8px;
+      border-radius: 3px;
+      width: 70px;
+      font-weight: 600;
+      outline: none;
+    }
+    .cat-name-input:focus { border-color: var(--green); }
+
+    .del-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+    .del-btn:hover { color: #e06060; background: rgba(200,60,60,.15); }
+
+    .add-cat-btn {
+      background: var(--bg3);
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem;
+      padding: 7px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all .15s;
+      width: 100%;
+      text-align: center;
+    }
+    .add-cat-btn:hover { color: var(--accent); border-color: var(--green); background: rgba(58,156,58,.08); }
+
+    /* ── GENERAL BUTTONS ── */
+    .btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem;
+      padding: 7px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: .04em;
+      border: 1px solid transparent;
+      transition: all .15s;
+    }
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-primary:hover { background: var(--green-light); }
+    .btn-secondary { background: var(--bg3); color: var(--text-muted); border-color: var(--border); }
+    .btn-secondary:hover { color: var(--text); background: var(--bg4); }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── SCROLLBAR global ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+    /* ── TOTAL ROW ── */
+    .stat-total {
+      margin-left: auto;
+      background: rgba(0,0,0,.3);
+      border: 2px solid rgba(255,255,255,.25);
+    }
+    .stat-total .stat-cat-name { font-size: .75rem; color: rgba(255,255,255,.7); }
+
+    /* ── Tooltip for open-ended ── */
+    abbr { text-decoration: none; cursor: help; }
+
+    /* ── CLUB STATUS TOGGLE ── */
+    .club-toggle {
+      font-family: 'IBM Plex Mono', monospace; font-size: .65rem; font-weight: 600;
+      padding: 3px 9px; border-radius: 10px; border: none; cursor: pointer;
+      letter-spacing: .04em; transition: background .15s, color .15s; white-space: nowrap;
+    }
+    .club-toggle.active  { background: rgba(91,192,91,.18); color: #5bc05b; border: 1px solid rgba(91,192,91,.35); }
+    .club-toggle.active:hover  { background: rgba(91,192,91,.3); }
+    .club-toggle.inactive { background: rgba(136,136,136,.15); color: var(--text-muted); border: 1px solid rgba(136,136,136,.25); }
+    .club-toggle.inactive:hover { background: rgba(136,136,136,.28); color: var(--text-dim); }
+
+    /* ── COMMENT INPUT ── */
+    .comment-cell { white-space: normal !important; min-width: 150px; max-width: 240px; }
+    .comment-input {
+      background: transparent; border: none; border-bottom: 1px solid transparent;
+      color: var(--text-dim); font-family: 'IBM Plex Sans', sans-serif;
+      font-size: .78rem; width: 100%; outline: none; padding: 1px 2px; transition: border-color .15s;
+    }
+    .comment-input:hover { border-bottom-color: var(--border); }
+    .comment-input:focus { border-bottom-color: var(--green); color: var(--text); background: rgba(255,255,255,.03); }
+    .comment-input::placeholder { color: #555; font-style: italic; }
+
+    /* ── ROW ACTION BUTTONS ── */
+    .row-actions { display: flex; gap: 5px; white-space: nowrap; }
+    .row-btn {
+      font-family: 'IBM Plex Mono', monospace; font-size: .62rem; font-weight: 600;
+      padding: 3px 8px; border-radius: 3px; border: 1px solid transparent;
+      cursor: pointer; letter-spacing: .04em; transition: all .15s; opacity: 0;
+    }
+    tr:hover .row-btn { opacity: 1; }
+    .row-btn-edit {
+      background: rgba(41,128,185,.15); color: #5ba3d9;
+      border-color: rgba(41,128,185,.3);
+    }
+    .row-btn-edit:hover { background: rgba(41,128,185,.3); }
+    .row-btn-remove {
+      background: rgba(195,51,51,.15); color: #e06060;
+      border-color: rgba(195,51,51,.3);
+    }
+    .row-btn-remove:hover { background: rgba(195,51,51,.3); }
+
+    /* ── EDIT PLAYER MODAL ── */
+    #edit-modal { width: 560px; }
+    .edit-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+    .edit-field { display: flex; flex-direction: column; gap: 5px; }
+    .edit-field.full { grid-column: 1 / -1; }
+    .edit-label {
+      font-family: 'IBM Plex Mono', monospace; font-size: .62rem;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);
+    }
+    .edit-input {
+      background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif; font-size: .85rem;
+      padding: 7px 10px; border-radius: 3px; outline: none; transition: border-color .15s;
+    }
+    .edit-input:focus { border-color: var(--green); }
+    .edit-input[readonly] { opacity: .5; cursor: not-allowed; }
+    .edit-textarea {
+      resize: vertical; min-height: 60px; font-family: 'IBM Plex Sans', sans-serif;
+    }
+    .edit-toggle-wrap { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+    .edit-toggle {
+      appearance: none; width: 36px; height: 20px; border-radius: 10px;
+      background: var(--bg4); border: 1px solid var(--border); cursor: pointer;
+      position: relative; transition: background .2s; flex-shrink: 0;
+    }
+    .edit-toggle::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--text-muted); transition: transform .2s, background .2s;
+    }
+    .edit-toggle:checked { background: var(--green); border-color: var(--green); }
+    .edit-toggle:checked::after { transform: translateX(16px); background: #fff; }
+    .edit-toggle-label { font-size: .82rem; color: var(--text-dim); }
+
+    .gender-switch {
+      display: flex;
+      gap: 10px;
+    }
+
+    .gender-option {
+      width: 60px;
+      height: 40px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      user-select: none;
+      transition: all .15s ease;
+      color: var(--text-muted);
+    }
+
+    .gender-option[data-value="male"].active {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: #00c8ff22;
+    }
+
+    .gender-option[data-value="female"].active {
+      border-color: var(--red);
+      color: var(--red);
+      background: #ff4d4d22;
+    }
+
+    .gender-option:hover {
+      opacity: .8;
+    }
+
+    .gender-filter-pair { display: flex; gap: 3px; align-items: center; }
+    .gender-filter-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .82rem;
+      font-weight: 600;
+      width: 30px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1.5px solid;
+      border-radius: 3px;
+      background: #0e0e0e;
+      transition: all .15s;
+      user-select: none;
+      letter-spacing: 0;
+    }
+    .gender-filter-btn.male   { color: #1c7a8a; border-color: #1c7a8a; }
+    .gender-filter-btn.female { color: #7a1818; border-color: #7a1818; }
+    .gender-filter-btn.male:hover   { color: #26a0b8; border-color: #26a0b8; }
+    .gender-filter-btn.female:hover { color: #a82222; border-color: #a82222; }
+    .gender-filter-btn.male.active   { color: var(--blue); border-color: var(--blue); background: #3acfe814; }
+    .gender-filter-btn.female.active { color: var(--red); border-color: var(--red); background: #d4404014; }
+
+    /* ── MERGE MODAL ── */
+    #merge-modal { width: 92vw; max-width: 1100px; }
+    #merge-options {
+      display: flex; align-items: center; gap: 14px; padding: 10px 20px;
+      background: var(--bg3); border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap;
+    }
+    .merge-opt-toggle {
+      display: flex; align-items: center; gap: 7px; cursor: pointer;
+      font-family: 'IBM Plex Mono', monospace; font-size: .72rem;
+      color: var(--text-muted); user-select: none; padding: 4px 10px;
+      border: 1px solid var(--border); border-radius: 3px; transition: all .15s;
+    }
+    .merge-opt-toggle:hover { color: var(--text); border-color: var(--text-muted); }
+    .merge-opt-toggle.on { color: var(--accent); border-color: var(--accent); background: rgba(91,192,91,.08); }
+    .merge-opt-toggle .chk { font-size: .8rem; }
+    #merge-summary {
+      margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: .7rem;
+      color: var(--text-muted); display: flex; gap: 12px;
+    }
+    .merge-sum-add { color: #5bc05b; }
+    .merge-sum-upd { color: #f39c12; }
+    .merge-sum-rem { color: #e06060; }
+    #merge-table-wrap { flex: 1; overflow: auto; }
+    #merge-table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+    #merge-table-wrap::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+    .merge-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    .merge-table th {
+      background: var(--bg3); color: var(--text-muted); font-family: 'IBM Plex Mono', monospace;
+      font-size: .62rem; letter-spacing: .08em; text-transform: uppercase;
+      padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; white-space: nowrap;
+    }
+    .merge-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .merge-table tr.disabled td { opacity: .32; text-decoration: line-through; }
+    .merge-table tr.disabled td:first-child { text-decoration: none; }
+    .merge-table tr.add-row  td:first-child { border-left: 3px solid #5bc05b; }
+    .merge-table tr.upd-row  td:first-child { border-left: 3px solid #f39c12; }
+    .merge-table tr.rem-row  td:first-child { border-left: 3px solid #e06060; }
+    .merge-table tr { cursor: pointer; transition: background .1s; }
+    .merge-table tbody tr:hover { background: var(--bg3); }
+    .type-badge {
+      font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 600;
+      padding: 2px 6px; border-radius: 3px; letter-spacing: .06em;
+    }
+    .badge-add { background: rgba(91,192,91,.18); color: #5bc05b; border: 1px solid rgba(91,192,91,.3); }
+    .badge-upd { background: rgba(243,156,18,.18); color: #f39c12; border: 1px solid rgba(243,156,18,.3); }
+    .badge-rem { background: rgba(224,96,96,.18); color: #e06060; border: 1px solid rgba(224,96,96,.3); }
+    .badge-missing  { background: #ff880033; color: #ff8800; border: 1px solid #ff880055; }
+    .badge-invalid  { background: #ff333333; color: #ff3333; border: 1px solid #ff333355; }
+    .badge-nochange { background: rgba(136,136,136,.15); color: #666; border: 1px solid rgba(136,136,136,.25); }
+    .merge-table tr.nochange-row td:first-child { border-left: 3px solid #444; }
+    .merge-table tr.nochange-row { cursor: default; }
+    .merge-table tr.no-id-row    { cursor: default; }
+    .merge-id-input { width: 80px; font-family: 'IBM Plex Mono', monospace; font-size: .75rem; padding: 2px 4px; border: 1px solid var(--border); border-radius: 3px; }
+    .cell-changed { color: #f39c12 !important; font-weight: 500; }
+    .cell-old { color: var(--text-muted); font-size: .72rem; text-decoration: line-through; margin-right: 4px; }
+
+    /* ── QUICK FILTER ACTIVE ── */
+    #filter-active-btn {
+      font-family: 'IBM Plex Mono', monospace; font-size: .68rem; font-weight: 600;
+      padding: 4px 11px; border-radius: 3px; cursor: pointer; letter-spacing: .04em;
+      border: 1px solid rgba(91,192,91,.35); background: transparent;
+      color: var(--text-muted); transition: all .15s; white-space: nowrap;
+    }
+    #filter-active-btn:hover { color: var(--accent); border-color: var(--accent); }
+    #filter-active-btn.on {
+      background: rgba(91,192,91,.18); color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── empty filter notice ── */
+    #no-results {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: .85rem;
+      display: none;
+    }
+
+    /* ── LOADING OVERLAY ── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .72);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    #loading-overlay.visible {
+      display: flex;
+    }
+    .loading-spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(91, 192, 91, .2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      min-width: 260px;
+    }
+    .loading-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .loading-msg {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-align: center;
+      min-height: 1.2em;
+      transition: opacity .15s;
+    }
+    .loading-filename {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .68rem;
+      color: var(--green-light);
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .support-link {
+      cursor: pointer;
+      transition: opacity .15s ease;
+    }
+
+    .support-link:hover {
+      opacity: .7;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <h1>ROSTERapp</h1>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div id="layout">
+
+  <!-- MAIN PANEL -->
+  <div id="main">
+
+    <!-- MEMBERS SECTION -->
+    <div id="members-section">
+      <div id="members-toolbar">
+        <span class="toolbar-label">seznam hráčů</span>
+        <div class="toolbar-sep"></div>
+        <input id="search-input" type="text" placeholder="hledat jméno / příjmení…" oninput="applyFilters()" />
+        <div class="toolbar-sep"></div>
+        <button id="filter-active-btn" onclick="toggleActiveFilter()" title="Zobrazit pouze aktivní hráče">● hraje</button>
+        <div class="gender-filter-pair" title="Filtr pohlaví">
+          <div class="gender-filter-btn male"   id="gf-male"   onclick="toggleGenderFilter('male')"   title="Muži">♂</div>
+          <div class="gender-filter-btn female" id="gf-female" onclick="toggleGenderFilter('female')" title="Ženy">♀</div>
+        </div>
+        <div id="filter-tags"></div>
+        <div class="toolbar-sep"></div>
+        <button id="upload-btn" onclick="openXlsxPicker()">↑ nahrát xlsx</button>
+        <input type="file" id="xlsx-upload" accept=".xlsx,.xls" style="display:none" onchange="loadXlsx(event)" />
+        <button id="upload-btn" onclick="exportPlayers()">↓ export hráčů</button>
+        <label id="upload-btn" style="cursor:pointer;">↑ import hráčů<input type="file" id="players-import" accept=".json" style="display:none" onchange="importPlayers(event)" /></label>
+        <button id="clear-btn" onclick="clearAllData()">🗑 vymazat data</button>
+      </div>
+
+      <!-- prominent season strip -->
+      <div id="active-season-strip">
+        <span id="active-season-badge">sezóna –</span>
+      </div>
+
+      <div id="table-wrap">
+        <table id="members-table">
+          <thead>
+            <tr id="table-head"></tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="13" class="no-data"><span>⚽</span>Nahrajte soubor xlsx se seznamem hráčů.</td></tr>
+          </tbody>
+        </table>
+        <div id="no-results">Žádní hráči neodpovídají filtru.</div>
+      </div>
+    </div>
+
+    <!-- STATS SECTION -->
+    <div id="stats-section">
+      <div id="stats-header">
+        <span class="toolbar-label">přehled kategorií</span>
+        <div class="toolbar-sep"></div>
+        <div id="season-tabs"></div>
+        <button id="stats-clear-btn" onclick="clearCategoryFilters()">✕ zrušit výběr</button>
+        <button class="hbtn" onclick="openEditor()">⚙ nastavení</button>
+      </div>
+      <div id="stats-grid"></div>
+    </div>
+
+    <footer id="footer">
+      <span id="app-version" style="margin-right: auto; padding-left: 20px;"></span>
+      <span>RosterApp &copy; 2026 | <a href="https://github.com/petrnovotny2011-ux/roster-app#" target="_blank">Petr Novotný</a></span>
+      <span class="support-link" style="margin-left: auto; padding-right: 20px;"><button class="btn" style="color: white; background-color: var(--blue);" onclick="openSupportModal()">Podpoř mě</button></span>
+    </footer>
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ════════════════════════════════════
+     CATEGORY EDITOR MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="editor-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙ EDITOR KATEGORIÍ</h2>
+      <button class="modal-close" onclick="closeEditor()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-label">sezóny</div>
+      <div id="editor-seasons-bar">
+        <!-- season tabs rendered by JS -->
+        <div id="add-season-form">
+          <input id="new-season-input" type="number" placeholder="rok" min="2020" max="2040" />
+          <button class="btn btn-secondary" onclick="addSeason()">+ přidat sezónu</button>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:6px;">kategorie</div>
+      <table class="editor-cats-table" id="editor-cats-table">
+        <thead>
+          <tr>
+            <th>Název</th>
+            <th>Od roku</th>
+            <th>Do roku</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="editor-cats-body"></tbody>
+      </table>
+      <button class="add-cat-btn" onclick="addCategory()">+ přidat kategorii</button>
+    </div>
+    <div class="modal-footer">
+      <label class="btn btn-secondary" style="cursor:pointer;" title="Načíst konfiguraci ze souboru JSON">
+        ↑ Import JSON
+        <input type="file" id="json-import" accept=".json" style="display:none" onchange="importConfig(event)" />
+      </label>
+      <button class="btn btn-secondary" onclick="exportConfig()" title="Uložit konfiguraci do souboru JSON">↓ Export JSON</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-secondary" onclick="closeEditor()">Zavřít</button>
+      <button class="btn btn-primary" onclick="saveEditor()">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     EDIT PLAYER MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-overlay">
+  <div class="modal" id="edit-modal">
+    <div class="modal-header">
+      <h2>✎ EDITACE HRÁČE</h2>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="edit-form">
+        <div class="edit-field">
+          <label class="edit-label">Příjmení</label>
+          <input class="edit-input" id="ef-surname" type="text" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Jméno</label>
+          <input class="edit-input" id="ef-firstname" type="text" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Rok narození</label>
+          <input class="edit-input" id="ef-birthYear" type="number" min="1990" max="2030" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Členské ID</label>
+          <input class="edit-input" id="ef-id" type="text" readonly title="ID nelze editovat" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Mateřský klub – název</label>
+          <input class="edit-input" id="ef-parentClubName" type="text" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Mateřský klub – ID</label>
+          <input class="edit-input" id="ef-parentClubId" type="text" placeholder="např. 1234567" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Hostuje v – název</label>
+          <input class="edit-input" id="ef-guestClubName" type="text" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Hostuje v – ID</label>
+          <input class="edit-input" id="ef-guestClubId" type="text" placeholder="např. 1234567" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Člen od</label>
+          <input class="edit-input" id="ef-since" type="text" />
+        </div>
+        <div class="edit-field full">
+          <label class="edit-label">Pohlaví</label>
+          <div class="gender-switch">
+            <div class="gender-option" data-value="male" onclick="toggleGender(this)">
+              <span>♂</span>
+            </div>
+            <div class="gender-option" data-value="female" onclick="toggleGender(this)">
+              <span>♀</span>
+            </div>
+          </div>
+
+          <input type="hidden" id="ef-gender" value="">
+        </div>
+        <div class="edit-field full">
+          <label class="edit-label">Stav FA</label>
+          <input class="edit-toggle" id="ef-active" type="checkbox" />
+        </div>
+        <div class="edit-field full">
+          <label class="edit-label">Stav v klubu (Hraje)</label>
+          <div class="edit-toggle-wrap">
+            <input class="edit-toggle" id="ef-clubActive" type="checkbox" />
+            <span class="edit-toggle-label" id="ef-clubActive-label">hraje</span>
+          </div>
+        </div>
+        <div class="edit-field full">
+          <label class="edit-label">Poznámka</label>
+          <textarea class="edit-input edit-textarea" id="ef-comment" placeholder="volná poznámka…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeEditModal()">Zrušit</button>
+      <button class="btn btn-primary" onclick="saveEditModal()">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     MERGE MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="merge-overlay">
+  <div class="modal" id="merge-modal">
+    <div class="modal-header">
+      <h2>⇄ SLOUČENÍ DAT – xlsx</h2>
+      <button class="modal-close" onclick="closeMergeModal()">✕</button>
+    </div>
+    <div id="merge-options">
+      <div class="merge-opt-toggle" id="opt-remove" onclick="toggleMergeOpt('remove')">
+        <span class="chk">☐</span> REMOVE – smazat hráče chybějící v xlsx
+      </div>
+      <div class="merge-opt-toggle" id="opt-nooverwrite" onclick="toggleMergeOpt('nooverwrite')">
+        <span class="chk">☐</span> NEPŘEPISOVAT – jen přidat, neměnit existující
+      </div>
+      <div class="merge-opt-toggle on" id="opt-onlychanges" onclick="toggleMergeOpt('onlychanges')">
+        <span class="chk">☑</span> POUZE ZMĚNY – skrýt beze změn
+      </div>
+      <div id="merge-summary">
+        <span class="merge-sum-add" id="ms-add">+ 0 nových</span>
+        <span class="merge-sum-upd" id="ms-upd">~ 0 změn</span>
+        <span class="merge-sum-rem" id="ms-rem">− 0 odebrat</span>
+      </div>
+    </div>
+    <div id="merge-table-wrap">
+      <table class="merge-table">
+        <thead><tr id="merge-table-head"></tr></thead>
+        <tbody id="merge-table-body"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--text-muted)" id="merge-apply-count"></span>
+      <div style="flex:1"></div>
+      <button class="btn btn-secondary" onclick="closeMergeModal()">Zrušit</button>
+      <button class="btn btn-primary" onclick="applyMerge()">Aplikovat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SUPPORT MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="support-overlay">
+  <div class="modal" style="max-width:420px;text-align:center">
+
+    <div class="modal-header">
+      <h2>☕ Podpoř mě</h2>
+      <button class="modal-close" onclick="closeSupportModal()">✕</button>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <div><strong>Částka:</strong> 50 Kč</div>
+      <div><strong>Účet:</strong> 1060988019 / 3030</div>
+      <div><strong>Zpráva:</strong> ROSTERAPP SUPPORT</div>
+    </div>
+
+    <div style="padding:24px">
+      <img
+        src="assets/support_qr.jpg"
+        alt="QR kód"
+        style="
+          width:100%;
+          max-width:320px;
+          border-radius:16px;
+          background:white;
+          padding:12px;
+        "
+      />
+
+      <div style="margin-top:18px;color:var(--text-dim)">
+        Díky za podporu ❤️
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     LOADING OVERLAY
+════════════════════════════════════ -->
+<div id="loading-overlay">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <div class="loading-title">Načítám data…</div>
+    <div class="loading-msg" id="loading-msg">Čtu soubor xlsx…</div>
+    <div class="loading-filename" id="loading-filename"></div>
+  </div>
+</div>
+
+<script>
+
+const APP = {
+  version: "1.0.0"
+};
+
+/* ══════════════════════════════════════════════════════
+   LOADING OVERLAY
+══════════════════════════════════════════════════════ */
+// Runs cb in a new task after the browser has committed a paint.
+const afterPaint = cb => requestAnimationFrame(() => setTimeout(cb, 0));
+
+function openXlsxPicker() {
+  showLoading("", "Vyberte soubor xlsx…");
+
+  requestAnimationFrame(() => {
+    document.getElementById("xlsx-upload").click();
+  });
+}
+
+window.addEventListener("focus", () => {
+  setTimeout(() => {
+    const input = document.getElementById("xlsx-upload");
+
+    if (!input.value) {
+      hideLoading();
+    }
+  }, 300);
+});
+
+function showLoading(filename, msg) {
+  document.getElementById("loading-filename").textContent = filename || "";
+  document.getElementById("loading-msg").textContent = msg || "Čtu soubor xlsx…";
+  document.getElementById("loading-overlay").classList.add("visible");
+}
+function setLoadingMsg(msg) {
+  document.getElementById("loading-msg").textContent = msg;
+}
+function hideLoading() {
+  document.getElementById("loading-overlay").classList.remove("visible");
+}
+
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+let players = [];
+let config = {};
+let currentSeason = "2025";
+let searchTerm = "";
+let selectedCategories = [];
+let sortField = "surname";
+let sortDir = "asc";
+let editorSeason = "2025";
+let editingUid = null;
+let filterActiveOnly = false;
+let filterGenderMale   = false;
+let filterGenderFemale = false;
+
+// Merge state
+let mergeIncoming   = [];
+let mergeChanges    = [];
+let mergeOptRemove      = false;
+let mergeOptNoOverwrite = false;
+let mergeOptOnlyChanges = true;
+
+const CAT_COLORS = ["#3a9c3a","#2980b9","#8e44ad","#c0392b","#d35400","#16a085","#f39c12"];
+
+/* ══════════════════════════════════════════════════════
+   DEFAULT CONFIG
+══════════════════════════════════════════════════════ */
+const DEFAULT_CONFIG = {
+  "2025": [
+    { name: "U7",  fromYear: 2019, toYear: null },
+    { name: "U9",  fromYear: 2017, toYear: 2018 },
+    { name: "U11", fromYear: 2015, toYear: 2016 },
+    { name: "U13", fromYear: 2013, toYear: 2014 },
+    { name: "U15", fromYear: 2011, toYear: 2012 },
+    { name: "U19", fromYear: 2007, toYear: 2010 }
+  ],
+  "2026": [
+    { name: "U7",  fromYear: 2020, toYear: null },
+    { name: "U9",  fromYear: 2018, toYear: 2019 },
+    { name: "U11", fromYear: 2016, toYear: 2017 },
+    { name: "U13", fromYear: 2014, toYear: 2015 },
+    { name: "U15", fromYear: 2012, toYear: 2013 },
+    { name: "U19", fromYear: 2008, toYear: 2011 }
+  ]
+};
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+function toBool(v) {
+  if (!v) return false;
+  const s = String(v).trim().toLowerCase();
+  return ["1", "true", "ano", "yes", "y"].includes(s);
+}
+
+function getVersion() {
+  return `verze ${APP.version}`;
+}
+
+/* ══════════════════════════════════════════════════════
+   SUPPORT MODAL
+══════════════════════════════════════════════════════ */
+function openSupportModal() {
+  document.getElementById("support-overlay").classList.add("open");
+}
+
+function closeSupportModal() {
+  document.getElementById("support-overlay").classList.remove("open");
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+function init() {
+  const savedCfg = localStorage.getItem("categories_config");
+  config = savedCfg ? JSON.parse(savedCfg) : JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+  const savedPlayers = localStorage.getItem("roster_data");
+  if (savedPlayers) {
+    try {
+      players = JSON.parse(savedPlayers).map((p, i) => ({
+        clubActive: true, comment: "", ...p, _uid: i
+      }));
+    } catch { players = []; }
+  }
+
+  document.getElementById("app-version").textContent = getVersion();
+
+  renderSeasonTabs();
+  renderStatsGrid();
+  renderTableHead();
+  renderTable(getFiltered());
+}
+
+/* ══════════════════════════════════════════════════════
+   SAVE CONFIG / PERSIST PLAYERS
+══════════════════════════════════════════════════════ */
+function saveConfig() {
+  localStorage.setItem("categories_config", JSON.stringify(config));
+}
+
+function persistPlayers() {
+  try { localStorage.setItem("roster_data", JSON.stringify(players)); } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════
+   XLSX LOAD → MERGE
+══════════════════════════════════════════════════════ */
+function loadXlsx(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+
+      const reader = new FileReader();
+
+      reader.onload = e => {
+        setLoadingMsg("Zpracovávám data…");
+
+      afterPaint(() => {
+        const incoming = parsePlayersFromBuffer(e.target.result);
+        event.target.value = "";
+        if (players.length === 0) {
+          setLoadingMsg("Kontroluji ID hráčů…");
+          afterPaint(() => {
+            const hasBadId = incoming.some(p => {
+              const id = String(p.id || "").trim();
+              return !id || !/^\d{8}$/.test(id);
+            });
+
+            if (!hasBadId) {
+              // All IDs valid – load directly, no modal needed
+              setLoadingMsg("Ukládám hráče…");
+              afterPaint(() => {
+                players = incoming.map((p, i) => ({ ...p, _uid: i }));
+                finishLoad(file.name);
+                hideLoading();
+              });
+            } else {
+              // Pre-load players that already have a valid 8-digit ID,
+              // then open the merge modal so the user can fix the rest.
+              players = incoming
+                .filter(p => /^\d{8}$/.test(String(p.id || "").trim()))
+                .map((p, i) => ({ ...p, _uid: i }));
+
+              openMergeModalShell(incoming, file.name);
+
+              afterPaint(() => {
+                buildMergeChanges();
+                renderMergeTable();
+
+                afterPaint(() => {
+                  hideLoading();
+                });
+              });
+            }
+          });
+        } else {
+          // Open the merge modal instantly with a spinner placeholder,
+          // hide the loading overlay, then do the heavy render inside the modal.
+          openMergeModalShell(incoming, file.name);
+
+          afterPaint(() => {
+            buildMergeChanges();
+            renderMergeTable();
+
+            afterPaint(() => {
+              hideLoading();
+            });
+          });
+        }
+      });
+      };
+
+      reader.onerror = () => {
+        hideLoading();
+        alert("Chyba při čtení souboru.");
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+  });
+}
+
+function parsePlayersFromBuffer(arrayBuffer) {
+  const wb = XLSX.read(arrayBuffer, { type: "array" });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+  return rows.map(r => {
+    const parentClub = r["Mateřský klub"] || r["Matersky klub"] || "";
+    const { clubId: parentClubId, clubName: parentClubName } = parseClub(parentClub);
+    const guestClub  = r["Hostuje v"] || "";
+    const { clubId: guestClubId, clubName: guestClubName } = parseClub(guestClub);
+    return {
+      id:            r["Členské ID"] || r["Clenské ID"] || r["ID"] || "",
+      surname:       r["Příjmení"]   || r["Prijmeni"]   || r["surname"]   || "",
+      firstname:     r["Jméno"]      || r["Jmeno"]      || r["name"]      || "",
+      birthYear:     parseInt(r["Rok narození"] || r["Rok narozeni"] || r["birth_year"] || 0),
+      parentClubId, parentClubName, guestClubId, guestClubName,
+      active:        toBool(r["Aktivním členem"] || r["active"]),
+      since:         r["Členem od"]  || r["Clenem od"] || "",
+      clubActive:    true,
+      gender:        null,
+      comment:       ""
+    };
+  }).filter(p => p.surname || p.firstname);
+}
+
+function parseClub(raw) {
+  if (!raw) return { clubId: "", clubName: "" };
+  const parts = raw.split(" - ");
+  return { clubId: parts[0]?.trim() || "", clubName: parts[1]?.trim() || "" };
+}
+
+function finishLoad(filename) {
+  try {
+    localStorage.setItem("roster_data", JSON.stringify(players));
+    localStorage.setItem("roster_filename", filename || "");
+  } catch(e) {}
+  renderStatsGrid();
+  applyFilters();
+}
+
+/* ══════════════════════════════════════════════════════
+   CATEGORY ASSIGNMENT
+══════════════════════════════════════════════════════ */
+function getCategory(birthYear, season) {
+  const cats = config[season];
+  if (!cats || !birthYear) return null;
+  for (const cat of cats) {
+    const from = cat.fromYear, to = cat.toYear;
+    if (to === null || to === "") { if (birthYear >= from) return cat.name; }
+    else { if (birthYear >= from && birthYear <= to) return cat.name; }
+  }
+  return null;
+}
+
+function getCatColor(catName, season) {
+  const cats = config[season] || [];
+  const idx = cats.findIndex(c => c.name === catName);
+  return idx >= 0 ? CAT_COLORS[idx % CAT_COLORS.length] : "#666";
+}
+
+function formatYears(cat) {
+  if (!cat.toYear) return cat.fromYear + "+";
+  if (cat.fromYear === cat.toYear) return String(cat.fromYear);
+  return cat.fromYear + "–" + cat.toYear;
+}
+
+/* ══════════════════════════════════════════════════════
+   SEASON TABS
+══════════════════════════════════════════════════════ */
+function renderSeasonTabs() {
+  const bar = document.getElementById("season-tabs");
+  const seasons = Object.keys(config).sort();
+  bar.innerHTML = seasons.map(s =>
+    `<div class="season-tab ${s === currentSeason ? "active" : ""}" onclick="selectSeason('${s}')">${s}</div>`
+  ).join("");
+  document.getElementById("active-season-badge").textContent = "sezóna " + currentSeason;
+}
+
+function selectSeason(s) {
+  currentSeason = s;
+  renderSeasonTabs();
+  renderStatsGrid();
+  renderTable(getFiltered());
+}
+
+/* ══════════════════════════════════════════════════════
+   STATS GRID
+══════════════════════════════════════════════════════ */
+function renderStatsGrid() {
+  const grid = document.getElementById("stats-grid");
+  const cats = config[currentSeason] || [];
+
+  const counts = {};
+  const inactiveCounts = {};
+  const maleCounts = {};
+  const femaleCounts = {};
+
+  let uncatCount = 0;
+
+  cats.forEach(c => {
+    counts[c.name] = 0;
+    inactiveCounts[c.name] = 0;
+    maleCounts[c.name] = 0;
+    femaleCounts[c.name] = 0;
+  });
+
+  players.forEach(p => {
+    const cat = getCategory(p.birthYear, currentSeason);
+
+    if (cat) {
+
+      // active / total count
+      if (p.clubActive !== false) {
+        counts[cat] = (counts[cat] || 0) + 1;
+      } else {
+        inactiveCounts[cat] = (inactiveCounts[cat] || 0) + 1;
+      }
+
+      // gender counts
+      if (p.gender === "male") {
+        maleCounts[cat] = (maleCounts[cat] || 0) + 1;
+      }
+
+      if (p.gender === "female") {
+        femaleCounts[cat] = (femaleCounts[cat] || 0) + 1;
+      }
+
+    } else {
+      uncatCount++;
+    }
+  });
+
+  const total = players.length;
+
+  const activeCount = players.filter(p => p.clubActive !== false).length;
+  const inactiveCount = players.filter(p => p.clubActive === false).length;
+
+  const maleCount = players.filter(p => p.gender === "male").length;
+  const femaleCount = players.filter(p => p.gender === "female").length;
+
+  let html = cats.map((cat, i) => {
+
+    const color = CAT_COLORS[i % CAT_COLORS.length];
+    const selected = selectedCategories.includes(cat.name);
+
+    return `
+      <div class="stat-card ${selected ? "selected" : ""}"
+          onclick="toggleCatFilter('${cat.name}')"
+          style="${selected ? `border-color:${color};background:${color}22` : ""}">
+
+        <div class="stat-cat-name" style="color:${color}">
+          ${cat.name}
+        </div>
+
+        <div class="stat-main-row">
+          <div class="stat-count">
+            ${counts[cat.name] ?? 0}
+          </div>
+
+          <div class="stat-inactive">
+            /${inactiveCounts[cat.name] ?? 0}
+          </div>
+        </div>
+
+        <div class="stat-gender-row">
+          <span class="male">${maleCounts[cat.name] ?? 0}</span>
+          <span class="sep">|</span>
+          <span class="female">${femaleCounts[cat.name] ?? 0}</span>
+        </div>
+
+        <div class="stat-years">
+          ${formatYears(cat)}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const uncatPlayers = players.filter(  p => !getCategory(p.birthYear, currentSeason));
+  const uncatActive = uncatPlayers.filter(  p => p.clubActive !== false).length;
+  const uncatInactive = uncatPlayers.filter(  p => p.clubActive === false).length;
+  const uncatMale = uncatPlayers.filter(  p => p.gender === "male").length;
+  const uncatFemale = uncatPlayers.filter(  p => p.gender === "female").length;
+  if (uncatPlayers.length > 0 || players.length === 0) {  
+    html += `<div class="stat-card stat-card-uncat ${selectedCategories.includes("__uncat__") ? "selected" : ""}"         onclick="toggleCatFilter('__uncat__')">      
+        <div class="stat-cat-name">—</div>
+          <div class="stat-main-row">        
+            <div class="stat-count">${uncatActive}</div>        
+            <div class="stat-inactive">/${uncatInactive}</div>      
+          </div>      
+          <div class="stat-gender-row">        
+            <span class="male">${uncatMale}</span>        
+            <span class="sep">|</span>        
+            <span class="female">${uncatFemale}</span>        
+          </div>      
+          <div class="stat-years">bez kategorie</div>    
+        </div>  `;
+  }
+  html += `<div class="stat-card stat-total" style="cursor:default">
+      <div class="stat-cat-name">CELKEM</div>
+      <div class="stat-main-row">
+        <div class="stat-count">${activeCount}</div>
+        <div class="stat-count-inactive">/${inactiveCount}</div>
+      </div>
+      <div class="stat-gender-row">
+        <span class="male">${maleCount}</span>
+        <span class="sep">|</span>
+        <span class="female">${femaleCount}</span>
+      </div>
+      <div class="stat-years">hráčů</div>
+    </div>`;
+  grid.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════════
+   FILTERING & SORTING
+══════════════════════════════════════════════════════ */
+function toggleCatFilter(name) {
+  if (selectedCategories.includes(name)) selectedCategories = selectedCategories.filter(x => x !== name);
+  else selectedCategories.push(name);
+  renderStatsGrid();
+  renderFilterTags();
+  renderTable(getFiltered());
+}
+
+function toggleActiveFilter() {
+  filterActiveOnly = !filterActiveOnly;
+  const btn = document.getElementById("filter-active-btn");
+  btn.classList.toggle("on", filterActiveOnly);
+  renderTable(getFiltered());
+}
+
+function toggleGenderFilter(type) {
+  if (type === 'male') {
+    filterGenderMale = !filterGenderMale;
+    document.getElementById("gf-male").classList.toggle("active", filterGenderMale);
+  } else {
+    filterGenderFemale = !filterGenderFemale;
+    document.getElementById("gf-female").classList.toggle("active", filterGenderFemale);
+  }
+  renderTable(getFiltered());
+}
+
+function clearCategoryFilters() {
+  selectedCategories = [];
+  renderStatsGrid();
+  renderFilterTags();
+  renderTable(getFiltered());
+}
+
+function clearAllFilters() {
+  selectedCategories = [];
+  searchTerm = "";
+  filterActiveOnly = false;
+  filterGenderMale = false;
+  filterGenderFemale = false;
+  document.getElementById("search-input").value = "";
+  const btn = document.getElementById("filter-active-btn");
+  if (btn) btn.classList.remove("on");
+  renderStatsGrid();
+  renderFilterTags();
+  renderTable(getFiltered());
+}
+
+function applyFilters() {
+  searchTerm = document.getElementById("search-input").value.toLowerCase();
+  renderTable(getFiltered());
+}
+
+function getFiltered() {
+  return players.filter(p => {
+
+    if (searchTerm) {
+      const full = (p.surname + " " + p.firstname + " " + p.id).toLowerCase();
+      if (!full.includes(searchTerm)) return false;
+    }
+    if (selectedCategories.length > 0) {
+      const cat = getCategory(p.birthYear, currentSeason);
+      const effectiveCat = cat ?? "__uncat__";
+      if (!selectedCategories.includes(effectiveCat)) return false;
+    }
+    if (filterActiveOnly && p.clubActive === false) return false;
+    if (filterGenderMale || filterGenderFemale) {
+      if (filterGenderMale && filterGenderFemale) {
+        if (p.gender !== 'male' && p.gender !== 'female') return false;
+      } else if (filterGenderMale) {
+        if (p.gender !== 'male') return false;
+      } else {
+        if (p.gender !== 'female') return false;
+      }
+    }
+    return true;
+  });
+}
+
+function renderFilterTags() {
+  const tagsEl = document.getElementById("filter-tags");
+  if (selectedCategories.length === 0) { tagsEl.innerHTML = ""; return; }
+  tagsEl.innerHTML = selectedCategories.map(c => {
+    const label = c === "__uncat__" ? "bez kategorie" : c;
+    const color = c !== "__uncat__" ? getCatColor(c, currentSeason) : "#888";
+    return `<span class="filter-tag" style="background:${color}99;border:1px solid ${color}">
+      ${label}<span class="filter-tag-remove" onclick="toggleCatFilter('${c}')">✕</span>
+    </span>`;
+  }).join("");
+}
+
+/* ══════════════════════════════════════════════════════
+   TABLE
+══════════════════════════════════════════════════════ */
+const COLUMNS = [
+  { field: "id",             label: "ID" },  { field: "surname",        label: "Příjmení" },
+  { field: "firstname",      label: "Jméno" },
+  { field: "birthYear",      label: "Rok nar." },
+  { field: "category",       label: "Kategorie" },
+  { field: "guestClubName",  label: "Hostuje v" },
+  { field: "active",         label: "FAČR" },
+  { field: "clubActive",     label: "Aktivní" },
+  { field: "gender",         label: "Pohlaví" },
+  { field: "comment",        label: "Poznámka" }
+];
+
+function renderTableHead() {
+  const tr = document.getElementById("table-head");
+  tr.innerHTML = COLUMNS.map(col => {
+    const cls = sortField === col.field ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
+    return `<th class="${cls}" onclick="sortBy('${col.field}')">${col.label}</th>`;
+  }).join("") + `<th style="width:110px"></th>`;
+}
+
+function sortBy(field) {
+  if (sortField === field) sortDir = sortDir === "asc" ? "desc" : "asc";
+  else { sortField = field; sortDir = "asc"; }
+  renderTableHead();
+  renderTable(getFiltered());
+}
+
+function renderTable(data) {
+  const sorted = [...data].sort((a, b) => {
+    let va = sortField === "category" ? (getCategory(a.birthYear, currentSeason) ?? "") : (a[sortField] ?? "");
+    let vb = sortField === "category" ? (getCategory(b.birthYear, currentSeason) ?? "") : (b[sortField] ?? "");
+    if (typeof va === "number" && typeof vb === "number") return sortDir === "asc" ? va - vb : vb - va;
+    va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
+    if (va < vb) return sortDir === "asc" ? -1 : 1;
+    if (va > vb) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const tbody = document.getElementById("table-body");
+  const noRes = document.getElementById("no-results");
+
+  if (players.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="13" class="no-data"><span>⚽</span>Nahrajte soubor xlsx se seznamem hráčů.</td></tr>`;
+    noRes.style.display = "none";
+    return;
+  }
+  if (sorted.length === 0) {
+    tbody.innerHTML = "";
+    noRes.style.display = "block";
+    return;
+  }
+  noRes.style.display = "none";
+
+  tbody.innerHTML = sorted.map(p => {
+    const cat = getCategory(p.birthYear, currentSeason);
+    const color = cat ? getCatColor(cat, currentSeason) : "#666";
+    const catBadge = cat
+      ? `<span class="cat-badge" style="background:${color}22;color:${color};border:1px solid ${color}55">${cat}</span>`
+      : `<span class="cat-badge" style="background:#33333388;color:#888">—</span>`;
+
+    const clubActiveBtn = `<button class="club-toggle ${p.clubActive !== false ? 'active' : 'inactive'}"
+      onclick="toggleClubActive(${p._uid})">${p.clubActive !== false ? '● hraje' : '○ nehraje'}</button>`;
+
+    const commentCell = `<input class="comment-input" type="text"
+      value="${esc(p.comment || '')}" placeholder="poznámka…"
+      onchange="setPlayerField(${p._uid},'comment',this.value)"
+      onclick="event.stopPropagation()" />`;
+
+    const actions = `<td class="row-actions">
+      <button class="row-btn row-btn-edit" onclick="openEditModal(${p._uid})">✎ edit</button>
+      <button class="row-btn row-btn-remove" onclick="removePlayer(${p._uid})">✕ smazat</button>
+    </td>`;
+
+    return `<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text-muted)">${esc(p.id)}</td>
+      <td><strong>${esc(p.surname)}</strong></td>
+      <td>${esc(p.firstname)}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:.8rem">${p.birthYear || "—"}</td>
+      <td>${catBadge}</td>
+      <td style="color:var(--text-dim);font-size:.78rem">${esc(p.guestClubName)}</td>
+      <td style="font-size:.78rem">
+        ${
+          p.active === true
+            ? '<span style="color:#5bc05b">●</span> ano'
+            : p.active === false
+              ? '<span style="color:#d9534f">●</span> ne'
+              : "—"
+        }
+      </td>
+      <td>${clubActiveBtn}</td>
+      <td>${p.gender ? `<span style="color:${p.gender === 'male' ? 'var(--blue)' : 'var(--red)'}">${p.gender === 'male' ? '♂' : '♀'}</span>` : "—"}</td>
+      <td class="comment-cell">${commentCell}</td>
+      ${actions}
+    </tr>`;
+  }).join("");
+}
+
+function esc(s) {
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+/* ══════════════════════════════════════════════════════
+   PLAYER FIELD EDITING
+══════════════════════════════════════════════════════ */
+function setPlayerField(uid, field, value) {
+  const p = players.find(p => p._uid === uid);
+  if (!p) return;
+  p[field] = value;
+  persistPlayers();
+}
+
+function toggleClubActive(uid) {
+  const p = players.find(p => p._uid === uid);
+  if (!p) return;
+  p.clubActive = p.clubActive === false ? true : false;
+  persistPlayers();
+  const btn = document.querySelector(`button.club-toggle[onclick="toggleClubActive(${uid})"]`);
+  if (btn) {
+    btn.className = `club-toggle ${p.clubActive !== false ? 'active' : 'inactive'}`;
+    btn.textContent = p.clubActive !== false ? '● hraje' : '○ nehraje';
+  }
+  renderStatsGrid();
+}
+
+function removePlayer(uid) {
+  const p = players.find(p => p._uid === uid);
+  if (!p) return;
+  const name = [p.surname, p.firstname].filter(Boolean).join(" ") || "tohoto hráče";
+  if (!confirm(`Smazat ${name}? Tato akce je nevratná.`)) return;
+  players = players.filter(p => p._uid !== uid);
+  persistPlayers();
+  renderStatsGrid();
+  renderTable(getFiltered());
+}
+
+/* ══════════════════════════════════════════════════════
+   EDIT PLAYER MODAL
+══════════════════════════════════════════════════════ */
+function openEditModal(uid) {
+  const p = players.find(p => p._uid === uid);
+  if (!p) return;
+  editingUid = uid;
+
+  document.getElementById("ef-surname").value         = p.surname    || "";
+  document.getElementById("ef-firstname").value       = p.firstname  || "";
+  document.getElementById("ef-birthYear").value       = p.birthYear  || "";
+  document.getElementById("ef-id").value              = p.id         || "";
+  document.getElementById("ef-parentClubName").value  = p.parentClubName || "";
+  document.getElementById("ef-parentClubId").value    = p.parentClubId || "";
+  document.getElementById("ef-guestClubName").value   = p.guestClubName  || "";
+  document.getElementById("ef-guestClubId").value     = p.guestClubId  || "";
+  document.getElementById("ef-active").checked        = p.active === true;
+  document.getElementById("ef-since").value           = p.since      || "";
+  document.getElementById("ef-comment").value         = p.comment    || "";
+
+  // reset UI
+  document.querySelectorAll(".gender-option").forEach(opt => opt.classList.remove("active"));
+
+  if (p.gender === "male") {
+    document.querySelector('.gender-option[data-value="male"]').classList.add("active");
+  } else if (p.gender === "female") {
+    document.querySelector('.gender-option[data-value="female"]').classList.add("active");
+  }
+
+  document.getElementById("ef-gender").value = p.gender || "";
+
+
+  const cb = document.getElementById("ef-clubActive");
+  cb.checked = p.clubActive !== false;
+  document.getElementById("ef-clubActive-label").textContent = cb.checked ? "hraje" : "nehraje";
+  cb.onchange = () => {
+    document.getElementById("ef-clubActive-label").textContent = cb.checked ? "hraje" : "nehraje";
+  };
+
+  document.getElementById("edit-overlay").classList.add("open");
+  document.getElementById("ef-surname").focus();
+}
+
+function toggleGender(el) {
+  const value = el.dataset.value;
+  const hidden = document.getElementById("ef-gender");
+
+  // pokud kliknu na aktivní → vypnout (neuvedeno)
+  if (el.classList.contains("active")) {
+    el.classList.remove("active");
+    hidden.value = "";
+    return;
+  }
+
+  // jinak aktivuji tento a vypnu druhý
+  document.querySelectorAll(".gender-option").forEach(opt => opt.classList.remove("active"));
+  el.classList.add("active");
+  hidden.value = value;
+}
+
+function closeEditModal() {
+  editingUid = null;
+  document.getElementById("edit-overlay").classList.remove("open");
+}
+
+function saveEditModal() {
+  const p = players.find(p => p._uid === editingUid);
+  if (!p) return;
+
+  p.surname         = document.getElementById("ef-surname").value.trim();
+  p.firstname       = document.getElementById("ef-firstname").value.trim();
+  p.birthYear       = parseInt(document.getElementById("ef-birthYear").value) || 0;
+  p.parentClubName  = document.getElementById("ef-parentClubName").value.trim();
+  p.parentClubId    = document.getElementById("ef-parentClubId").value.trim();
+  p.guestClubName   = document.getElementById("ef-guestClubName").value.trim();
+  p.guestClubId     = document.getElementById("ef-guestClubId").value.trim();
+  p.active          = document.getElementById("ef-active").checked;
+  p.since           = document.getElementById("ef-since").value.trim();
+  p.comment         = document.getElementById("ef-comment").value;
+  p.clubActive      = document.getElementById("ef-clubActive").checked;
+  p.gender          = document.getElementById("ef-gender").value;
+
+
+  persistPlayers();
+  closeEditModal();
+  renderStatsGrid();
+  renderTable(getFiltered());
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT / IMPORT PLAYERS
+══════════════════════════════════════════════════════ */
+function exportPlayers() {
+  if (players.length === 0) {
+    alert("Nejsou načtena žádná data hráčů.");
+    return;
+  }
+
+  const payload = {
+    type: "rosterapp.players",
+    version: "1.0",
+
+    players: players.map(({ _uid, ...p }) => p)
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(payload, null, 2)],
+    { type: "application/json" }
+  );
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+
+  const stamp = new Date().toISOString().slice(0,10);
+
+  a.download = `roster_export_${stamp}.json`;
+  a.click();
+
+  URL.revokeObjectURL(a.href);
+}
+
+function importPlayers(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (players.length > 0) {
+    if (!confirm(`V aplikaci je ${players.length} hráčů. Import JSON přepíše všechna stávající data. Pokračovat?`)) {
+      event.target.value = "";
+      return;
+    }
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+
+      let importedPlayers = [];
+
+      // structured format
+      if (
+        imported &&
+        typeof imported === "object" &&
+        imported.type === "rosterapp.players" &&
+        typeof imported.version === "string" &&
+        Array.isArray(imported.players)
+      ) {
+
+        importedPlayers = imported.players;
+
+      }
+      // legacy format
+      else if (Array.isArray(imported)) {
+
+        importedPlayers = imported;
+
+      }
+      else {
+        throw new Error("invalid roster format");
+      }
+
+      players = importedPlayers.map((p, i) => ({
+        clubActive: true,
+        comment: "",
+        ...p,
+        _uid: i
+      }));
+
+      persistPlayers();
+      localStorage.setItem("roster_filename", file.name);
+
+      renderStatsGrid();
+      applyFilters();
+
+    } catch (e) {
+      alert(
+        "Chyba při načítání souboru. Použijte soubor exportovaný touto aplikací."
+        + "\nChyba: " + e.message
+      );
+    }
+
+    event.target.value = "";
+  };
+
+  reader.readAsText(file);
+}
+
+/* ══════════════════════════════════════════════════════
+   MERGE MODAL
+══════════════════════════════════════════════════════ */
+const MERGE_FIELDS = ["surname","firstname","birthYear","parentClubId","parentClubName",
+                      "guestClubId","guestClubName","active","since"];
+const MERGE_COLS = [
+  { field:"surname",        label:"Příjmení" },
+  { field:"firstname",      label:"Jméno" },
+  { field:"birthYear",      label:"Rok nar." },
+  { field:"parentClubName", label:"Mateřský klub" },
+  { field:"parentClubId",   label:"(ID)" },
+  { field:"guestClubName",  label:"Hostuje v" },
+  { field:"guestClubId",    label:"(ID)" },
+  { field:"active",         label:"FAČR" },
+  { field:"since",          label:"Člen od" },
+];
+
+function openMergeModalShell(incoming, filename, titleOverride, isInitialLoad) {
+  mergeIncoming = incoming;
+  mergeIncoming._filename = filename;
+  document.querySelector("#merge-modal .modal-header h2").textContent =
+    titleOverride || "⇄ SLOUČENÍ DAT – xlsx";
+
+  // Hide/show the three filter toggles depending on context
+  ["opt-remove","opt-nooverwrite","opt-onlychanges"].forEach(id => {
+    document.getElementById(id).style.display = isInitialLoad ? "none" : "";
+  });
+  mergeOptRemove = false; mergeOptNoOverwrite = false; mergeOptOnlyChanges = true;
+  document.getElementById("opt-remove").classList.remove("on");
+  document.getElementById("opt-nooverwrite").classList.remove("on");
+  document.getElementById("opt-onlychanges").classList.add("on");
+  document.getElementById("opt-remove").querySelector(".chk").textContent = "☐";
+  document.getElementById("opt-nooverwrite").querySelector(".chk").textContent = "☐";
+  document.getElementById("opt-onlychanges").querySelector(".chk").textContent = "☑";
+  // Reset summary badges
+  document.getElementById("ms-add").textContent = "+ …";
+  document.getElementById("ms-upd").textContent = "~ …";
+  document.getElementById("ms-rem").textContent = "− …";
+  document.getElementById("merge-apply-count").textContent = "";
+  document.getElementById("merge-table-head").innerHTML = "";
+  document.getElementById("merge-table-body").innerHTML =
+    `<tr><td colspan="12" style="text-align:center;padding:48px 20px">
+      <div style="display:inline-block;width:28px;height:28px;border:3px solid rgba(91,192,91,.2);
+        border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite"></div>
+      <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+        color:var(--text-muted);letter-spacing:.08em">POROVNÁVÁM ZMĚNY…</div>
+    </td></tr>`;
+  document.getElementById("merge-overlay").classList.add("open");
+}
+
+function openMergeModal(incoming, filename) {
+  mergeIncoming = incoming;
+  mergeIncoming._filename = filename;
+  ["opt-remove","opt-nooverwrite","opt-onlychanges"].forEach(id => {
+    document.getElementById(id).style.display = "";
+  });
+  mergeOptRemove = false; mergeOptNoOverwrite = false; mergeOptOnlyChanges = true;
+  document.getElementById("opt-remove").classList.remove("on");
+  document.getElementById("opt-nooverwrite").classList.remove("on");
+  document.getElementById("opt-onlychanges").classList.add("on");
+  document.getElementById("opt-remove").querySelector(".chk").textContent = "☐";
+  document.getElementById("opt-nooverwrite").querySelector(".chk").textContent = "☐";
+  document.getElementById("opt-onlychanges").querySelector(".chk").textContent = "☑";
+  buildMergeChanges();
+  renderMergeTable();
+  document.getElementById("merge-overlay").classList.add("open");
+}
+
+function closeMergeModal() {
+  document.getElementById("merge-overlay").classList.remove("open");
+  mergeIncoming = []; mergeChanges = [];
+}
+
+function toggleMergeOpt(opt) {
+  if (opt === "remove") {
+    mergeOptRemove = !mergeOptRemove;
+    const el = document.getElementById("opt-remove");
+    el.classList.toggle("on", mergeOptRemove);
+    el.querySelector(".chk").textContent = mergeOptRemove ? "☑" : "☐";
+  } else if (opt === "nooverwrite") {
+    mergeOptNoOverwrite = !mergeOptNoOverwrite;
+    const el = document.getElementById("opt-nooverwrite");
+    el.classList.toggle("on", mergeOptNoOverwrite);
+    el.querySelector(".chk").textContent = mergeOptNoOverwrite ? "☑" : "☐";
+  } else if (opt === "onlychanges") {
+    mergeOptOnlyChanges = !mergeOptOnlyChanges;
+    const el = document.getElementById("opt-onlychanges");
+    el.classList.toggle("on", mergeOptOnlyChanges);
+    el.querySelector(".chk").textContent = mergeOptOnlyChanges ? "☑" : "☐";
+  }
+  renderMergeTable();
+}
+
+function buildMergeChanges() {
+  const existingById = {};
+  players.forEach(p => { if (p.id) existingById[String(p.id)] = p; });
+
+  const incomingById = {};
+  mergeIncoming.forEach(p => { if (p.id) incomingById[String(p.id)] = p; });
+
+  // Pre-count IDs to detect duplicates within the incoming list
+  const incomingIdCount = {};
+  mergeIncoming.forEach(p => {
+    const id = String(p.id || "").trim();
+    if (id) incomingIdCount[id] = (incomingIdCount[id] || 0) + 1;
+  });
+
+  mergeChanges = [];
+
+  // ADD / UPDATE / NOCHANGE
+  mergeIncoming.forEach(inc => {
+    const incId         = String(inc.id || "").trim();
+    const isValidFormat = /^\d{8}$/.test(incId);
+    const isDup         = incId ? (incomingIdCount[incId] || 0) > 1 : false;
+    const ex            = (isValidFormat && !isDup) ? existingById[incId] : null;
+
+    if (!incId) {
+      mergeChanges.push({
+        type: "ADD", id: "", existing: null, incoming: inc,
+        fields: {}, enabled: false, missingId: true, invalidId: false, idEditable: true
+      });
+      return;
+    }
+
+    if (!isValidFormat || isDup) {
+      // Invalid format or duplicate within import – flag but keep editable
+      mergeChanges.push({
+        type: "ADD", id: incId, existing: null, incoming: inc,
+        fields: {}, enabled: false, missingId: false, invalidId: true, idEditable: true
+      });
+      return;
+    }
+
+    if (!ex) {
+      mergeChanges.push({
+        type: "ADD", id: incId, existing: null, incoming: inc,
+        fields: {}, enabled: true
+      });
+    } else {
+      const changed = {};
+      MERGE_FIELDS.forEach(f => {
+        const ov = String(ex[f] ?? "");
+        const nv = String(inc[f] ?? "");
+        if (ov !== nv) changed[f] = { old: ex[f], new: inc[f] };
+      });
+
+      const hasChanges = Object.keys(changed).length > 0;
+
+      if (hasChanges) {
+        mergeChanges.push({
+          type: "UPDATE", id: incId, existing: ex, incoming: inc,
+          fields: changed, enabled: true
+        });
+      } else {
+        mergeChanges.push({
+          type: "NOCHANGE", id: incId, existing: ex, incoming: inc,
+          fields: {}, enabled: false
+        });
+      }
+    }
+  });
+
+  // Always add REMOVE candidates – visibility/apply controlled by mergeOptRemove
+  players.forEach(ex => {
+    if (ex.id && !incomingById[String(ex.id)]) {
+      mergeChanges.push({
+        type: "REMOVE", id: String(ex.id), existing: ex, incoming: null,
+        fields: {}, enabled: true
+      });
+    }
+  });
+}
+
+function revalidateEditableIds() {
+  // Count IDs across ALL mergeChanges rows (always complete now)
+  const idCount = {};
+  mergeChanges.forEach(c => {
+    if (c.id) idCount[c.id] = (idCount[c.id] || 0) + 1;
+  });
+
+  mergeChanges.forEach(ch => {
+    if (!ch.idEditable) return;
+
+    const isValidFormat  = /^\d{8}$/.test(ch.id);
+    const isDup          = ch.id ? (idCount[ch.id] || 0) > 1 : false;
+    const existingPlayer = (ch.id && isValidFormat && !isDup) ? players.find(p => String(p.id) === ch.id) : null;
+
+    if (!ch.id) {
+      ch.missingId = true; ch.invalidId = false; ch.enabled = false;
+      ch.type = "ADD"; ch.existing = null; ch.fields = {}; ch._wasManualId = false;
+    } else if (!isValidFormat || isDup) {
+      ch.missingId = false; ch.invalidId = true; ch.enabled = false;
+      if (ch._wasManualId) { ch.type = "ADD"; ch.existing = null; ch.fields = {}; }
+    } else if (existingPlayer) {
+      ch.missingId = false; ch.invalidId = false; ch._wasManualId = true;
+      const changed = {};
+      MERGE_FIELDS.forEach(f => {
+        const ov = String(existingPlayer[f] ?? "");
+        const nv = String(ch.incoming[f] ?? "");
+        if (ov !== nv) changed[f] = { old: existingPlayer[f], new: ch.incoming[f] };
+      });
+      if (Object.keys(changed).length > 0) {
+        ch.type = "UPDATE"; ch.existing = existingPlayer; ch.fields = changed; ch.enabled = true;
+      } else {
+        ch.type = "NOCHANGE"; ch.existing = existingPlayer; ch.fields = {}; ch.enabled = false;
+      }
+    } else {
+      ch.missingId = false; ch.invalidId = false; ch.enabled = true;
+      if (ch._wasManualId) { ch.type = "ADD"; ch.existing = null; ch.fields = {}; ch._wasManualId = false; }
+    }
+  });
+}
+
+function editMergeId(ci, value) {
+  const ch = mergeChanges[ci];
+  ch.id = value.trim();
+  ch.incoming.id = ch.id;   // keep mergeIncoming in sync for rebuild correctness
+
+  revalidateEditableIds();
+
+  // Auto-render when the field is complete so badges update without needing to blur
+  if (ch.id.length === 8) renderMergeTable();
+}
+
+function renderMergeTable() {
+  const counts = { ADD:0, UPDATE:0, REMOVE:0 };
+  mergeChanges.forEach(c => {
+    if (!c.enabled) return;
+    if (c.type === "UPDATE" && mergeOptNoOverwrite) return;
+    if (c.type === "REMOVE" && !mergeOptRemove) return;
+    if (counts[c.type] !== undefined) counts[c.type]++;
+  });
+  document.getElementById("ms-add").textContent = `+ ${counts.ADD} nových`;
+  document.getElementById("ms-upd").textContent = `~ ${counts.UPDATE} změn`;
+  document.getElementById("ms-rem").textContent = `− ${counts.REMOVE} odebrat`;
+  const total = counts.ADD + counts.UPDATE + counts.REMOVE;
+  document.getElementById("merge-apply-count").textContent = `${total} změn bude aplikováno`;
+
+  document.getElementById("merge-table-head").innerHTML =
+    `<th>Typ</th><th>ID</th>` + MERGE_COLS.map(c => `<th>${c.label}</th>`).join("") + `<th style="width:30px"></th>`;
+
+  const tbody = document.getElementById("merge-table-body");
+  const visible = mergeChanges
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ ch }) => {
+      if (ch.type === "REMOVE"  && !mergeOptRemove)                      return false;
+      if (ch.type === "NOCHANGE" && mergeOptOnlyChanges && !ch.idEditable) return false;
+      return true;
+    });
+ 
+  if (visible.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${MERGE_COLS.length+3}" style="text-align:center;padding:30px;color:var(--text-muted)">Žádné změny</td></tr>`;
+    return;
+  }
+ 
+  tbody.innerHTML = visible.map(({ ch, i: ci }) => {
+    // Option-based lock (independent of user toggle state)
+    const optLocked = (ch.type === "UPDATE" && mergeOptNoOverwrite)
+                   || (ch.type === "REMOVE" && !mergeOptRemove);
+    const locked = ch.missingId || ch.invalidId || ch.type === "NOCHANGE" || optLocked;
+ 
+    let badge = { ADD:"badge-add", UPDATE:"badge-upd", REMOVE:"badge-rem", NOCHANGE:"badge-nochange" }[ch.type] || "badge-add";
+    let label = { ADD:"PŘIDAT", UPDATE:"ZMĚNIT", REMOVE:"ODEBRAT", NOCHANGE:"BEZ ZMĚNY" }[ch.type] || "PŘIDAT";
+    if (ch.missingId) { badge = "badge-missing"; label = "CHYBÍ ID"; }
+    if (ch.invalidId) { badge = "badge-invalid"; label = "NEPLATNÉ ID"; }
+ 
+    const baseClass = ch.type.toLowerCase() + "-row" + (locked || !ch.enabled ? " disabled" : "");
+    const rowClass  = baseClass + (locked ? (ch.missingId || ch.invalidId ? " no-id-row" : " nochange-row") : "");
+    const src = ch.type === "REMOVE" ? ch.existing : ch.incoming;
+    const fmtVal = (v, field) => {
+      if (field === "active") return v === true || v === "true" ? "Ano" : v === false || v === "false" ? "Ne" : String(v ?? "");
+      return String(v ?? "");
+    };
+    const cells = MERGE_COLS.map(col => {
+      let content = esc(fmtVal(src ? (src[col.field] ?? "") : "", col.field));
+      if (ch.type === "UPDATE" && ch.fields[col.field]) {
+        const diff = ch.fields[col.field];
+        content = `<span class="cell-old">${esc(fmtVal(diff.old, col.field))}</span>`+
+                  `<span class="cell-changed">${esc(fmtVal(diff.new, col.field))}</span>`;
+      }
+      return `<td onclick="toggleMergeCell(event,${ci})">${content}</td>`;
+    }).join("");
+    const idReadonly = !ch.idEditable && (ch.type === "NOCHANGE" || (!ch.missingId && !ch.invalidId && ch.type !== "ADD"));
+    const indicator = locked ? `<span style="color:#444">—</span>` : ch.enabled ? "✓" : "○";
+    return `<tr class="${rowClass}" onclick="toggleMergeRow(${ci})">
+      <td><span class="type-badge ${badge}">${label}</span></td>
+      <td onclick="event.stopPropagation()">
+      <input class="merge-id-input"
+              type="text"
+              inputmode="numeric"
+              maxlength="8"
+              pattern="\\d*"
+              value="${esc(ch.id)}"
+              placeholder="8 číslic"
+              ${idReadonly ? 'readonly style="opacity:.45;cursor:default"' : ''}
+              oninput="editMergeId(${ci}, this.value)"
+              onblur="renderMergeTable()" />
+      </td>
+      ${cells}
+      <td style="text-align:center;color:var(--text-muted)">${indicator}</td>
+    </tr>`;
+  }).join("");
+}
+
+function toggleMergeRow(ci) {
+  const ch = mergeChanges[ci];
+  const optLocked = (ch.type === "UPDATE" && mergeOptNoOverwrite)
+                 || (ch.type === "REMOVE" && !mergeOptRemove);
+  if (ch.missingId || ch.invalidId || ch.type === "NOCHANGE" || optLocked) return;
+  ch.enabled = !ch.enabled;
+  renderMergeTable();
+}
+function toggleMergeCell(event, ci) { event.stopPropagation(); toggleMergeRow(ci); }
+
+function applyMerge() {
+  const filename = mergeIncoming._filename || "";
+  const maxUid = players.reduce((m, p) => Math.max(m, p._uid ?? 0), 0);
+  let uidCounter = maxUid + 1;
+  mergeChanges.filter(c => {
+    if (!c.enabled) return false;
+    if (c.type === "UPDATE" && mergeOptNoOverwrite) return false;
+    if (c.type === "REMOVE" && !mergeOptRemove) return false;
+    return true;
+  }).forEach(ch => {
+    if (ch.type === "ADD") {
+      players.push({ ...ch.incoming, _uid: uidCounter++, clubActive: true, comment: "" });
+    } else if (ch.type === "UPDATE") {
+      const idx = players.findIndex(p => p.id === ch.id);
+      if (idx >= 0) MERGE_FIELDS.forEach(f => { players[idx][f] = ch.incoming[f]; });
+    } else if (ch.type === "REMOVE") {
+      players = players.filter(p => p.id !== ch.id);
+    }
+  });
+  players.forEach((p, i) => { p._uid = i; });
+  closeMergeModal();
+  finishLoad(filename);
+}
+
+/* ══════════════════════════════════════════════════════
+   IMPORT / EXPORT CONFIG
+══════════════════════════════════════════════════════ */
+function exportConfig() {
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "categories_config.json";
+  a.click();
+}
+
+function importConfig(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      config = JSON.parse(e.target.result);
+      localStorage.setItem("categories_config", JSON.stringify(config));
+      currentSeason = Object.keys(config).sort()[0];
+      selectedCategories = [];
+      renderSeasonTabs();
+      renderStatsGrid();
+      renderFilterTags();
+      renderTable(getFiltered());
+    } catch { alert("Chyba při načítání JSON souboru."); }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
+}
+
+/* ══════════════════════════════════════════════════════
+   CATEGORY EDITOR
+══════════════════════════════════════════════════════ */
+function openEditor() {
+  editorSeason = currentSeason;
+  if (!config[editorSeason]) editorSeason = Object.keys(config).sort()[0];
+  renderEditorSeasons();
+  renderEditorCats();
+  document.getElementById("editor-overlay").classList.add("open");
+}
+function closeEditor() { document.getElementById("editor-overlay").classList.remove("open"); }
+
+function saveEditor() {
+  saveConfig();
+  selectedCategories = selectedCategories.filter(c =>
+    c === "__uncat__" || (config[currentSeason] || []).some(cat => cat.name === c)
+  );
+  renderSeasonTabs();
+  renderStatsGrid();
+  renderFilterTags();
+  renderTable(getFiltered());
+  closeEditor();
+}
+
+function renderEditorSeasons() {
+  const bar = document.getElementById("editor-seasons-bar");
+  const seasons = Object.keys(config).sort();
+  const tabs = seasons.map(s => `
+    <div class="editor-season-tab ${s === editorSeason ? "active" : ""}" onclick="switchEditorSeason('${s}')">
+      ${s}<span class="editor-season-tab-remove" onclick="event.stopPropagation();removeSeason('${s}')">✕</span>
+    </div>`).join("");
+  bar.innerHTML = tabs + `<div id="add-season-form">
+    <input id="new-season-input" type="number" placeholder="rok" min="2020" max="2040" />
+    <button class="btn btn-secondary" onclick="addSeason()">+ přidat</button>
+  </div>`;
+}
+
+function switchEditorSeason(s) {
+  editorSeason = s;
+  renderEditorSeasons();
+  renderEditorCats();
+}
+
+function addSeason() {
+  const val = document.getElementById("new-season-input").value.trim();
+  if (!val || isNaN(val)) return;
+  const yr = parseInt(val);
+  if (config[yr]) { alert("Tato sezóna již existuje."); return; }
+  const existingSeasons = Object.keys(config).map(Number).sort();
+  const nearest = existingSeasons[existingSeasons.length - 1];
+  const diff = yr - nearest;
+  config[yr] = JSON.parse(JSON.stringify(config[nearest])).map(c => ({
+    name: c.name, fromYear: c.fromYear + diff, toYear: c.toYear === null ? null : c.toYear + diff
+  }));
+  editorSeason = String(yr);
+  renderEditorSeasons();
+  renderEditorCats();
+}
+
+function removeSeason(s) {
+  if (Object.keys(config).length <= 1) { alert("Musí existovat alespoň jedna sezóna."); return; }
+  if (!confirm(`Smazat sezónu ${s}?`)) return;
+  delete config[s];
+  if (editorSeason === s) editorSeason = Object.keys(config).sort()[0];
+  if (currentSeason === s) currentSeason = Object.keys(config).sort()[0];
+  renderEditorSeasons();
+  renderEditorCats();
+}
+
+function renderEditorCats() {
+  const tbody = document.getElementById("editor-cats-body");
+  const cats = config[editorSeason] || [];
+  tbody.innerHTML = cats.map((cat, i) => `
+    <tr id="cat-row-${i}">
+      <td><input class="cat-name-input" value="${esc(cat.name)}" oninput="updateCatField(${i},'name',this.value)" /></td>
+      <td><input class="year-input" type="number" value="${cat.fromYear}" oninput="updateCatField(${i},'fromYear',this.value)" /></td>
+      <td><input class="year-input open-end" type="number" value="${cat.toYear ?? ""}" placeholder="∞" oninput="updateCatField(${i},'toYear',this.value)" /></td>
+      <td><button class="del-btn" onclick="removeCat(${i})">✕</button></td>
+    </tr>`).join("");
+}
+
+function updateCatField(i, field, value) {
+  if (!config[editorSeason]) return;
+  if (field === "name") config[editorSeason][i].name = value;
+  else if (field === "fromYear") config[editorSeason][i].fromYear = parseInt(value) || 0;
+  else if (field === "toYear") config[editorSeason][i].toYear = value === "" ? null : (parseInt(value) || null);
+}
+
+function commitEditorCats() {}
+
+function addCategory() {
+  if (!config[editorSeason]) config[editorSeason] = [];
+  config[editorSeason].push({ name: "U?", fromYear: 2000, toYear: 2005 });
+  renderEditorCats();
+}
+
+function removeCat(i) {
+  config[editorSeason].splice(i, 1);
+  renderEditorCats();
+}
+
+function clearAllData() {
+  if (!confirm("Opravdu chcete vymazat všechna data včetně uložených v prohlížeči?")) return;
+  localStorage.removeItem("roster_data");
+  localStorage.removeItem("roster_filename");
+  localStorage.removeItem("categories_config");
+  players = [];
+  searchTerm = "";
+  selectedCategories = [];
+  document.getElementById("search-input").value = "";
+  renderStatsGrid();
+  renderFilterTags();
+  renderTable(players);
+}
+
+/* ══════════════════════════════════════════════════════
+   CLICK OUTSIDE MODAL TO CLOSE
+══════════════════════════════════════════════════════ */
+document.getElementById("editor-overlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("editor-overlay")) closeEditor();
+});
+document.getElementById("edit-overlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("edit-overlay")) closeEditModal();
+});
+document.getElementById("merge-overlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("merge-overlay")) closeMergeModal();
+});
+
+/* ══════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════ */
+init();
+</script>
+</body>
+</html>
