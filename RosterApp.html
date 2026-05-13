@@ -42,6 +42,8 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
+      height: -webkit-fill-available;
+      height: 100dvh;
     }
 
     /* ── HEADER ── */
@@ -197,6 +199,13 @@
     }
     #search-input:focus { border-color: var(--green); }
     #search-input::placeholder { color: var(--text-muted); }
+
+    #search-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
 
     .toolbar-sep { width: 1px; height: 20px; background: var(--border); }
 
@@ -360,7 +369,7 @@
     #stats-header .toolbar-label { color: rgba(255,255,255,.7); }
 
     #season-tabs {
-      display: flex;
+      display: none;
       gap: 4px;
     }
     .season-tab {
@@ -377,6 +386,19 @@
     }
     .season-tab:hover { background: rgba(0,0,0,.25); color: #fff; }
     .season-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
+
+    #season-select {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .78rem;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
 
     #stats-clear-btn {
       margin-left: auto;
@@ -1015,6 +1037,110 @@
     .support-link:hover {
       opacity: .7;
     }
+
+    /* ── TOOLBAR ACTIONS (desktop flex child) ── */
+    #toolbar-actions {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── FILTERS PANEL ── */
+    #filters-panel {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      max-height: 120px;
+      overflow: hidden;
+      opacity: 1;
+      transition: max-height .25s ease, opacity .2s ease, padding .25s ease;
+    }
+    #filters-panel.collapsed {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      opacity: 0;
+    }
+
+    /* ── HAMBURGER ── */
+    #hamburger-btn { 
+      display: flex; 
+      align-items: center;
+    }
+
+    #hamburger-menu {
+      position: fixed;
+      top: var(--header-h);
+      right: 0;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 0 6px;
+      z-index: 50;
+      flex-direction: column;
+      min-width: 210px;
+      box-shadow: -4px 8px 24px rgba(0,0,0,.5);
+      display: none;
+    }
+    #hamburger-menu.open { display: flex; }
+
+    .ham-item {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem;
+      padding: 12px 18px;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: left;
+      letter-spacing: .04em;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .ham-item:last-child { border-bottom: none; }
+    .ham-item:hover { background: var(--bg3); color: var(--text); }
+    .ham-item.danger { color: #e06060; }
+    .ham-item.danger:hover { background: rgba(195,51,51,.12); }
+
+    /* ── FILTERS TOGGLE BUTTON (mobile only) ── */
+    #filters-toggle-btn {
+      display: flex;
+      align-items: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .68rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text-muted);
+      transition: all .15s;
+      white-space: nowrap;
+      letter-spacing: .04em;
+      margin-left: auto;
+    }
+    #filters-toggle-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    #filters-toggle-btn.has-active { color: var(--accent); border-color: var(--accent); background: rgba(91,192,91,.08); }
+
+    #search-row #search-input { width: 100%; flex: 1; }
+
+    /* ── MOBILE OVERRIDES ── */
+    @media (min-width: 769px) {
+      #season-tabs    { display: flex; }
+      #season-select  { display: none; }
+
+      #hamburger-btn   { display: none;}
+      #filters-toggle-btn { display: none; }
+      #toolbar-actions { display: flex; }
+    }
+
   </style>
 </head>
 <body>
@@ -1022,6 +1148,18 @@
 <!-- HEADER -->
 <div id="header">
   <h1>ROSTERapp</h1>
+  <div id="header-actions">
+    <button class="hbtn" id="hamburger-btn" onclick="toggleHamburger()" title="Akce">☰</button>
+  </div>
+</div>
+
+<div id="hamburger-menu">
+  <button class="ham-item" onclick="openXlsxPicker();closeHamburger()">↑ nahrát xlsx</button>
+  <button class="ham-item" onclick="exportPlayers();closeHamburger()">↓ export hráčů</button>
+  <label class="ham-item">↑ import hráčů
+    <input type="file" accept=".json" style="display:none" onchange="importPlayers(event);closeHamburger()" />
+  </label>
+  <button class="ham-item danger" onclick="clearAllData();closeHamburger()">🗑 vymazat data</button>
 </div>
 
 <!-- MAIN LAYOUT -->
@@ -1035,20 +1173,30 @@
       <div id="members-toolbar">
         <span class="toolbar-label">seznam hráčů</span>
         <div class="toolbar-sep"></div>
-        <input id="search-input" type="text" placeholder="hledat jméno / příjmení…" oninput="applyFilters()" />
-        <div class="toolbar-sep"></div>
+        <div id="search-row">
+          <input id="search-input" type="text" placeholder="hledat jméno / příjmení…" oninput="applyFilters()" />
+          <button id="filters-toggle-btn" onclick="toggleFiltersPanel()">▼ filtry</button>
+        </div>
+        <div id="toolbar-actions">
+          <div class="toolbar-sep"></div>
+          <button id="upload-btn" onclick="openXlsxPicker()">↑ nahrát xlsx</button>
+          <input type="file" id="xlsx-upload" accept=".xlsx,.xls" style="display:none" onchange="loadXlsx(event)" />
+          <button id="upload-btn" onclick="exportPlayers()">↓ export hráčů</button>
+          <label id="upload-btn" style="cursor:pointer;">↑ import hráčů
+            <input type="file" id="players-import" accept=".json" style="display:none" onchange="importPlayers(event)" />
+          </label>
+          <button id="clear-btn" onclick="clearAllData()">🗑 vymazat data</button>
+        </div>
+      </div>
+
+      <!-- Filters panel: permanent on desktop, collapsible on mobile -->
+      <div id="filters-panel">
         <button id="filter-active-btn" onclick="toggleActiveFilter()" title="Zobrazit pouze aktivní hráče">● hraje</button>
         <div class="gender-filter-pair" title="Filtr pohlaví">
           <div class="gender-filter-btn male"   id="gf-male"   onclick="toggleGenderFilter('male')"   title="Muži">♂</div>
           <div class="gender-filter-btn female" id="gf-female" onclick="toggleGenderFilter('female')" title="Ženy">♀</div>
         </div>
         <div id="filter-tags"></div>
-        <div class="toolbar-sep"></div>
-        <button id="upload-btn" onclick="openXlsxPicker()">↑ nahrát xlsx</button>
-        <input type="file" id="xlsx-upload" accept=".xlsx,.xls" style="display:none" onchange="loadXlsx(event)" />
-        <button id="upload-btn" onclick="exportPlayers()">↓ export hráčů</button>
-        <label id="upload-btn" style="cursor:pointer;">↑ import hráčů<input type="file" id="players-import" accept=".json" style="display:none" onchange="importPlayers(event)" /></label>
-        <button id="clear-btn" onclick="clearAllData()">🗑 vymazat data</button>
       </div>
 
       <!-- prominent season strip -->
@@ -1075,6 +1223,7 @@
         <span class="toolbar-label">přehled kategorií</span>
         <div class="toolbar-sep"></div>
         <div id="season-tabs"></div>
+        <select id="season-select" onchange="selectSeason(this.value)"></select>
         <button id="stats-clear-btn" onclick="clearCategoryFilters()">✕ zrušit výběr</button>
         <button class="hbtn" onclick="openEditor()">⚙ nastavení</button>
       </div>
@@ -1312,7 +1461,7 @@
 <script>
 
 const APP = {
-  version: "1.0.0"
+  version: "1.0.1"
 };
 
 /* ══════════════════════════════════════════════════════
@@ -1366,6 +1515,8 @@ let editingUid = null;
 let filterActiveOnly = false;
 let filterGenderMale   = false;
 let filterGenderFemale = false;
+let hamburgerOpen = false;
+let filtersPanelOpen = true;
 
 // Merge state
 let mergeIncoming   = [];
@@ -1409,6 +1560,25 @@ function toBool(v) {
 
 function getVersion() {
   return `verze ${APP.version}`;
+}
+
+async function saveFile(blob, filename) {
+  if (navigator.share && navigator.canShare) {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: filename });
+        return;
+      } catch (e) {
+        if (e.name === "AbortError") return;
+      }
+    }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1607,10 +1777,17 @@ function formatYears(cat) {
 ══════════════════════════════════════════════════════ */
 function renderSeasonTabs() {
   const bar = document.getElementById("season-tabs");
+  const sel = document.getElementById("season-select");
   const seasons = Object.keys(config).sort();
+
   bar.innerHTML = seasons.map(s =>
     `<div class="season-tab ${s === currentSeason ? "active" : ""}" onclick="selectSeason('${s}')">${s}</div>`
   ).join("");
+
+  sel.innerHTML = seasons.map(s =>
+    `<option value="${s}" ${s === currentSeason ? "selected" : ""}>${s}</option>`
+  ).join("");
+
   document.getElementById("active-season-badge").textContent = "sezóna " + currentSeason;
 }
 
@@ -1758,6 +1935,7 @@ function toggleCatFilter(name) {
   renderStatsGrid();
   renderFilterTags();
   renderTable(getFiltered());
+  updateFilterToggleBadge();
 }
 
 function toggleActiveFilter() {
@@ -1765,6 +1943,7 @@ function toggleActiveFilter() {
   const btn = document.getElementById("filter-active-btn");
   btn.classList.toggle("on", filterActiveOnly);
   renderTable(getFiltered());
+  updateFilterToggleBadge();
 }
 
 function toggleGenderFilter(type) {
@@ -1776,6 +1955,29 @@ function toggleGenderFilter(type) {
     document.getElementById("gf-female").classList.toggle("active", filterGenderFemale);
   }
   renderTable(getFiltered());
+  updateFilterToggleBadge();
+}
+
+function toggleHamburger() {
+  hamburgerOpen = !hamburgerOpen;
+  document.getElementById("hamburger-menu").classList.toggle("open", hamburgerOpen);
+}
+function closeHamburger() {
+  hamburgerOpen = false;
+  document.getElementById("hamburger-menu").classList.remove("open");
+}
+function toggleFiltersPanel() {
+  filtersPanelOpen = !filtersPanelOpen;
+  document.getElementById("filters-panel").classList.toggle("collapsed", !filtersPanelOpen);
+  const btn = document.getElementById("filters-toggle-btn");
+  btn.textContent = filtersPanelOpen ? "▲ filtry" : "▼ filtry";
+  updateFilterToggleBadge();
+}
+function updateFilterToggleBadge() {
+  const btn = document.getElementById("filters-toggle-btn");
+  if (!btn) return;
+  const hasActive = filterActiveOnly || filterGenderMale || filterGenderFemale || selectedCategories.length > 0;
+  btn.classList.toggle("has-active", hasActive);
 }
 
 function clearCategoryFilters() {
@@ -1783,6 +1985,7 @@ function clearCategoryFilters() {
   renderStatsGrid();
   renderFilterTags();
   renderTable(getFiltered());
+  updateFilterToggleBadge();
 }
 
 function clearAllFilters() {
@@ -1797,6 +2000,7 @@ function clearAllFilters() {
   renderStatsGrid();
   renderFilterTags();
   renderTable(getFiltered());
+  updateFilterToggleBadge();
 }
 
 function applyFilters() {
@@ -2090,15 +2294,8 @@ function exportPlayers() {
     { type: "application/json" }
   );
 
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-
   const stamp = new Date().toISOString().slice(0,10);
-
-  a.download = `roster_export_${stamp}.json`;
-  a.click();
-
-  URL.revokeObjectURL(a.href);
+  saveFile(blob, `roster_export_${stamp}.json`);
 }
 
 function importPlayers(event) {
@@ -2511,10 +2708,7 @@ function applyMerge() {
 ══════════════════════════════════════════════════════ */
 function exportConfig() {
   const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "categories_config.json";
-  a.click();
+  saveFile(blob, "categories_config.json");
 }
 
 function importConfig(event) {
@@ -2665,6 +2859,13 @@ document.getElementById("merge-overlay").addEventListener("click", e => {
   if (e.target === document.getElementById("merge-overlay")) closeMergeModal();
 });
 
+document.addEventListener("click", e => {
+  if (hamburgerOpen &&
+      !e.target.closest("#hamburger-menu") &&
+      !e.target.closest("#hamburger-btn")) {
+    closeHamburger();
+  }
+});
 /* ══════════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════════ */
