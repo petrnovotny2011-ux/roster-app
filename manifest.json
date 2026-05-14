@@ -1,0 +1,18 @@
+{
+  "name": "ROSTERapp",
+  "short_name": "ROSTERapp",
+  "description": "Správa hráčů a kategorií",
+  "start_url": "./RosterApp.html",
+  "display": "standalone",
+  "background_color": "#1c1c1c",
+  "theme_color": "#3a9c3a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
