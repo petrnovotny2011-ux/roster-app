@@ -34,6 +34,41 @@
       --text-dim: #bbb;
       --border: #3a3a3a;
       --accent: #5bc05b;
+
+      /* ── status / action colours ── */
+      --danger:         #e06060;
+      --danger-18:      rgba(224,96,96,.18);
+      --danger-30:      rgba(224,96,96,.3);
+      --delete-bg:      rgba(195,51,51,.15);
+      --delete-hover:   rgba(195,51,51,.3);
+      --delete-subtle:  rgba(195,51,51,.12);
+      --warning:        #f39c12;
+      --warning-18:     rgba(243,156,18,.18);
+      --warning-30:     rgba(243,156,18,.3);
+      --edit-text:      #5ba3d9;
+      --edit-bg:        rgba(41,128,185,.15);
+      --edit-hover:     rgba(41,128,185,.3);
+
+      /* ── accent tints ── */
+      --accent-08:  rgba(91,192,91,.08);
+      --accent-18:  rgba(91,192,91,.18);
+      --accent-30:  rgba(91,192,91,.3);
+      --accent-35:  rgba(91,192,91,.35);
+
+      /* ── muted (inactive badges / toggles) ── */
+      --muted-bg:     rgba(136,136,136,.15);
+      --muted-border: rgba(136,136,136,.25);
+
+      /* ── gender intermediates ── */
+      --male-dim:           #1c7a8a;
+      --male-hover:         #26a0b8;
+      --female-dim:         #7a1818;
+      --female-hover:       #a82222;
+      --male-tint-bg:       #3acfe814;
+      --male-tint-border:   #3acfe840;
+      --female-tint-bg:     #d4404014;
+      --female-tint-border: #d4404040;
+
       --sidebar-w: 38px;
       --header-h: 44px;
       --stats-h: 220px;
@@ -69,6 +104,20 @@
       font-weight: 600;
       letter-spacing: 0.08em;
       color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .logo-icon {
+      display: inline-flex;
+      align-items: center;
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
     }
     #header-actions {
       position: absolute;
@@ -696,7 +745,7 @@
       padding: 2px 5px;
       border-radius: 3px;
     }
-    .del-btn:hover { color: #e06060; background: rgba(200,60,60,.15); }
+    .del-btn:hover { color: var(--danger); background: rgba(200,60,60,.15); }
 
     .add-cat-btn {
       background: var(--bg3);
@@ -761,9 +810,9 @@
       padding: 3px 9px; border-radius: 10px; border: none; cursor: pointer;
       letter-spacing: .04em; transition: background .15s, color .15s; white-space: nowrap;
     }
-    .club-toggle.active  { background: rgba(91,192,91,.18); color: #5bc05b; border: 1px solid rgba(91,192,91,.35); }
-    .club-toggle.active:hover  { background: rgba(91,192,91,.3); }
-    .club-toggle.inactive { background: rgba(136,136,136,.15); color: var(--text-muted); border: 1px solid rgba(136,136,136,.25); }
+    .club-toggle.active  { background: var(--accent-18); color: var(--accent); border: 1px solid var(--accent-35); }
+    .club-toggle.active:hover  { background: var(--accent-30); }
+    .club-toggle.inactive { background: var(--muted-bg); color: var(--text-muted); border: 1px solid var(--muted-border); }
     .club-toggle.inactive:hover { background: rgba(136,136,136,.28); color: var(--text-dim); }
 
     /* ── COMMENT INPUT ── */
@@ -786,15 +835,15 @@
     }
     tr:hover .row-btn { opacity: 1; }
     .row-btn-edit {
-      background: rgba(41,128,185,.15); color: #5ba3d9;
-      border-color: rgba(41,128,185,.3);
+      background: var(--edit-bg); color: var(--edit-text);
+      border-color: var(--edit-hover);
     }
-    .row-btn-edit:hover { background: rgba(41,128,185,.3); }
+    .row-btn-edit:hover { background: var(--edit-hover); }
     .row-btn-remove {
-      background: rgba(195,51,51,.15); color: #e06060;
-      border-color: rgba(195,51,51,.3);
+      background: var(--delete-bg); color: var(--danger);
+      border-color: var(--delete-hover);
     }
-    .row-btn-remove:hover { background: rgba(195,51,51,.3); }
+    .row-btn-remove:hover { background: var(--delete-hover); }
 
     /* ── EDIT PLAYER MODAL ── */
     #edit-modal { width: 560px; }
@@ -885,12 +934,12 @@
       user-select: none;
       letter-spacing: 0;
     }
-    .gender-filter-btn.male   { color: #1c7a8a; border-color: #1c7a8a; }
-    .gender-filter-btn.female { color: #7a1818; border-color: #7a1818; }
-    .gender-filter-btn.male:hover   { color: #26a0b8; border-color: #26a0b8; }
-    .gender-filter-btn.female:hover { color: #a82222; border-color: #a82222; }
-    .gender-filter-btn.male.active   { color: var(--blue); border-color: var(--blue); background: #3acfe814; }
-    .gender-filter-btn.female.active { color: var(--red); border-color: var(--red); background: #d4404014; }
+    .gender-filter-btn.male   { color: var(--male-dim); border-color: var(--male-dim); }
+    .gender-filter-btn.female { color: var(--female-dim); border-color: var(--female-dim); }
+    .gender-filter-btn.male:hover   { color: var(--male-hover); border-color: var(--male-hover); }
+    .gender-filter-btn.female:hover { color: var(--female-hover); border-color: var(--female-hover); }
+    .gender-filter-btn.male.active   { color: var(--blue); border-color: var(--blue); background: var(--male-tint-bg); }
+    .gender-filter-btn.female.active { color: var(--red); border-color: var(--red); background: var(--female-tint-bg); }
 
     /* ── MERGE MODAL ── */
     #merge-modal { width: 92vw; max-width: 1100px; }
@@ -905,15 +954,15 @@
       border: 1px solid var(--border); border-radius: 3px; transition: all .15s;
     }
     .merge-opt-toggle:hover { color: var(--text); border-color: var(--text-muted); }
-    .merge-opt-toggle.on { color: var(--accent); border-color: var(--accent); background: rgba(91,192,91,.08); }
+    .merge-opt-toggle.on { color: var(--accent); border-color: var(--accent); background: var(--accent-08); }
     .merge-opt-toggle .chk { font-size: .8rem; }
     #merge-summary {
       margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: .7rem;
       color: var(--text-muted); display: flex; gap: 12px;
     }
-    .merge-sum-add { color: #5bc05b; }
-    .merge-sum-upd { color: #f39c12; }
-    .merge-sum-rem { color: #e06060; }
+    .merge-sum-add { color: var(--accent); }
+    .merge-sum-upd { color: var(--warning); }
+    .merge-sum-rem { color: var(--danger); }
     #merge-table-wrap { flex: 1; overflow: auto; }
     #merge-table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
     #merge-table-wrap::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
@@ -927,38 +976,63 @@
     .merge-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     .merge-table tr.disabled td { opacity: .32; text-decoration: line-through; }
     .merge-table tr.disabled td:first-child { text-decoration: none; }
-    .merge-table tr.add-row  td:first-child { border-left: 3px solid #5bc05b; }
-    .merge-table tr.upd-row  td:first-child { border-left: 3px solid #f39c12; }
-    .merge-table tr.rem-row  td:first-child { border-left: 3px solid #e06060; }
+    .merge-table tr.add-row  td:first-child { border-left: 3px solid var(--accent); }
+    .merge-table tr.upd-row  td:first-child { border-left: 3px solid var(--warning); }
+    .merge-table tr.rem-row  td:first-child { border-left: 3px solid var(--danger); }
     .merge-table tr { cursor: pointer; transition: background .1s; }
     .merge-table tbody tr:hover { background: var(--bg3); }
     .type-badge {
       font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 600;
       padding: 2px 6px; border-radius: 3px; letter-spacing: .06em;
     }
-    .badge-add { background: rgba(91,192,91,.18); color: #5bc05b; border: 1px solid rgba(91,192,91,.3); }
-    .badge-upd { background: rgba(243,156,18,.18); color: #f39c12; border: 1px solid rgba(243,156,18,.3); }
-    .badge-rem { background: rgba(224,96,96,.18); color: #e06060; border: 1px solid rgba(224,96,96,.3); }
+    .badge-add { background: var(--accent-18); color: var(--accent); border: 1px solid var(--accent-30); }
+    .badge-upd { background: var(--warning-18); color: var(--warning); border: 1px solid var(--warning-30); }
+    .badge-rem { background: var(--danger-18); color: var(--danger); border: 1px solid var(--danger-30); }
     .badge-missing  { background: #ff880033; color: #ff8800; border: 1px solid #ff880055; }
     .badge-invalid  { background: #ff333333; color: #ff3333; border: 1px solid #ff333355; }
-    .badge-nochange { background: rgba(136,136,136,.15); color: #666; border: 1px solid rgba(136,136,136,.25); }
+    .badge-nochange { background: var(--muted-bg); color: #666; border: 1px solid var(--muted-border); }
     .merge-table tr.nochange-row td:first-child { border-left: 3px solid #444; }
     .merge-table tr.nochange-row { cursor: default; }
     .merge-table tr.no-id-row    { cursor: default; }
     .merge-id-input { width: 80px; font-family: 'IBM Plex Mono', monospace; font-size: .75rem; padding: 2px 4px; border: 1px solid var(--border); border-radius: 3px; }
-    .cell-changed { color: #f39c12 !important; font-weight: 500; }
+
+    /* ── MERGE ROW GENDER TOGGLE ── */
+    .mg-btn {
+      font-family: 'IBM Plex Mono', monospace; font-size: .82rem; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 22px; border-radius: 3px; cursor: pointer;
+      user-select: none; transition: all .1s; border: 1px solid transparent;
+    }
+    .mg-male-off   { color: var(--male-dim); opacity: .38; }
+    .mg-male-on    { color: var(--blue); background: var(--male-tint-bg); border-color: var(--male-tint-border); opacity: 1; }
+    .mg-female-off { color: var(--female-dim); opacity: .38; }
+    .mg-female-on  { color: var(--red); background: var(--female-tint-bg); border-color: var(--female-tint-border); opacity: 1; }
+    .mg-btn:hover  { opacity: .85; }
+
+    /* ── MERGE GLOBAL GENDER BUTTONS ── */
+    .merge-gall-btn {
+      font-family: 'IBM Plex Mono', monospace; font-size: .7rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 3px; cursor: pointer; letter-spacing: .04em;
+      border: 1px solid var(--border); background: rgba(0,0,0,.2);
+      color: var(--text-muted); transition: all .15s; white-space: nowrap;
+    }
+    .merge-gall-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .merge-gall-btn.mga-male-on   { color: var(--blue); border-color: var(--blue); background: var(--male-tint-bg); }
+    .merge-gall-btn.mga-female-on { color: var(--red);  border-color: var(--red);  background: var(--female-tint-bg); }
+    .merge-gall-btn.mga-none-on   { color: var(--text-dim); border-color: var(--text-muted); background: rgba(0,0,0,.3); }
+    .cell-changed { color: var(--warning) !important; font-weight: 500; }
     .cell-old { color: var(--text-muted); font-size: .72rem; text-decoration: line-through; margin-right: 4px; }
 
     /* ── QUICK FILTER ACTIVE ── */
     #filter-active-btn {
       font-family: 'IBM Plex Mono', monospace; font-size: .68rem; font-weight: 600;
       padding: 4px 11px; border-radius: 3px; cursor: pointer; letter-spacing: .04em;
-      border: 1px solid rgba(91,192,91,.35); background: transparent;
+      border: 1px solid var(--accent-35); background: transparent;
       color: var(--text-muted); transition: all .15s; white-space: nowrap;
     }
     #filter-active-btn:hover { color: var(--accent); border-color: var(--accent); }
     #filter-active-btn.on {
-      background: rgba(91,192,91,.18); color: var(--accent);
+      background: var(--accent-18); color: var(--accent);
       border-color: var(--accent);
     }
 
@@ -989,7 +1063,7 @@
     .loading-spinner {
       width: 44px;
       height: 44px;
-      border: 3px solid rgba(91, 192, 91, .2);
+      border: 3px solid rgba(91,192,91,.2);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin .75s linear infinite;
@@ -1044,7 +1118,7 @@
       opacity: .7;
     }
 
-    /* ── TOOLBAR ACTIONS (desktop flex child) ── */
+    /* ── TOOLBAR ACTIONS ── */
     #toolbar-actions {
       display: none;
       align-items: center;
@@ -1111,10 +1185,10 @@
     }
     .ham-item:last-child { border-bottom: none; }
     .ham-item:hover { background: var(--bg3); color: var(--text); }
-    .ham-item.danger { color: #e06060; }
-    .ham-item.danger:hover { background: rgba(195,51,51,.12); }
+    .ham-item.danger { color: var(--danger); }
+    .ham-item.danger:hover { background: var(--delete-subtle); }
 
-    /* ── FILTERS TOGGLE BUTTON (mobile only) ── */
+    /* ── FILTERS TOGGLE BUTTON ── */
     #filters-toggle-btn {
       display: flex;
       align-items: center;
@@ -1133,11 +1207,11 @@
       margin-left: auto;
     }
     #filters-toggle-btn:hover { color: var(--text); border-color: var(--text-muted); }
-    #filters-toggle-btn.has-active { color: var(--accent); border-color: var(--accent); background: rgba(91,192,91,.08); }
+    #filters-toggle-btn.has-active { color: var(--accent); border-color: var(--accent); background: var(--accent-08); }
 
     #search-row #search-input { width: 100%; flex: 1; }
 
-    /* ── MOBILE OVERRIDES ── */
+    /* ── DESKTOP OVERRIDES ── */
     @media (min-width: 769px) {
       #season-tabs    { display: flex; }
       #season-select  { display: none; }
@@ -1147,13 +1221,20 @@
       #toolbar-actions { display: flex; }
     }
 
+    @media (display-mode: standalone) and (min-width: 769px) {
+      #header { display: none; }
+    }
+
   </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <div id="header">
-  <h1>ROSTERapp</h1>
+  <h1>
+      <span class="logo-icon" aria-hidden="true"></span>
+      ROSTERapp
+    </h1>
   <div id="header-actions">
     <button class="hbtn" id="hamburger-btn" onclick="toggleHamburger()" title="Akce">☰</button>
   </div>
@@ -1393,6 +1474,13 @@
       <div class="merge-opt-toggle on" id="opt-onlychanges" onclick="toggleMergeOpt('onlychanges')">
         <span class="chk">☑</span> POUZE ZMĚNY – skrýt beze změn
       </div>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,.12);flex-shrink:0" id="merge-gender-sep"></div>
+      <div id="merge-gender-global" style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45)">pohlaví:</span>
+        <button class="merge-gall-btn" id="mga-male"   onclick="setAllMergeGender('male')">♂ muži</button>
+        <button class="merge-gall-btn" id="mga-female" onclick="setAllMergeGender('female')">♀ ženy</button>
+        <button class="merge-gall-btn mga-none-on" id="mga-none" onclick="setAllMergeGender(null)">— neurčeno</button>
+      </div>
       <div id="merge-summary">
         <span class="merge-sum-add" id="ms-add">+ 0 nových</span>
         <span class="merge-sum-upd" id="ms-upd">~ 0 změn</span>
@@ -1467,7 +1555,7 @@
 <script>
 
 const APP = {
-  version: "1.0.1"
+  version: "1.0.2"
 };
 
 /* ══════════════════════════════════════════════════════
@@ -1615,11 +1703,22 @@ function init() {
   }
 
   document.getElementById("app-version").textContent = getVersion();
+  loadIcon();
 
   renderSeasonTabs();
   renderStatsGrid();
   renderTableHead();
   renderTable(getFiltered());
+}
+
+/* ══════════════════════════════════════════════════════
+   ICON LOADER
+══════════════════════════════════════════════════════ */
+function loadIcon() {
+  fetch("assets/icon.svg")
+    .then(r => r.text())
+    .then(svg => document.querySelectorAll(".logo-icon").forEach(el => el.innerHTML = svg))
+    .catch(() => {});
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1648,48 +1747,12 @@ function loadXlsx(event) {
       reader.onload = e => {
         setLoadingMsg("Zpracovávám data…");
 
-      afterPaint(() => {
-        const incoming = parsePlayersFromBuffer(e.target.result);
-        event.target.value = "";
-        if (players.length === 0) {
-          setLoadingMsg("Kontroluji ID hráčů…");
-          afterPaint(() => {
-            const hasBadId = incoming.some(p => {
-              const id = String(p.id || "").trim();
-              return !id || !/^\d{8}$/.test(id);
-            });
+        afterPaint(() => {
+          const incoming = parsePlayersFromBuffer(e.target.result);
+          event.target.value = "";
+          const isInitialLoad = players.length === 0;
 
-            if (!hasBadId) {
-              // All IDs valid – load directly, no modal needed
-              setLoadingMsg("Ukládám hráče…");
-              afterPaint(() => {
-                players = incoming.map((p, i) => ({ ...p, _uid: i }));
-                finishLoad(file.name);
-                hideLoading();
-              });
-            } else {
-              // Pre-load players that already have a valid 8-digit ID,
-              // then open the merge modal so the user can fix the rest.
-              players = incoming
-                .filter(p => /^\d{8}$/.test(String(p.id || "").trim()))
-                .map((p, i) => ({ ...p, _uid: i }));
-
-              openMergeModalShell(incoming, file.name);
-
-              afterPaint(() => {
-                buildMergeChanges();
-                renderMergeTable();
-
-                afterPaint(() => {
-                  hideLoading();
-                });
-              });
-            }
-          });
-        } else {
-          // Open the merge modal instantly with a spinner placeholder,
-          // hide the loading overlay, then do the heavy render inside the modal.
-          openMergeModalShell(incoming, file.name);
+          openMergeModalShell(incoming, file.name, null, isInitialLoad);
 
           afterPaint(() => {
             buildMergeChanges();
@@ -1699,8 +1762,7 @@ function loadXlsx(event) {
               hideLoading();
             });
           });
-        }
-      });
+        });
       };
 
       reader.onerror = () => {
@@ -2392,19 +2454,27 @@ function openMergeModalShell(incoming, filename, titleOverride, isInitialLoad) {
   mergeIncoming = incoming;
   mergeIncoming._filename = filename;
   document.querySelector("#merge-modal .modal-header h2").textContent =
-    titleOverride || "⇄ SLOUČENÍ DAT – xlsx";
+    titleOverride || (isInitialLoad ? "↑ NAČTENÍ DAT – xlsx" : "⇄ SLOUČENÍ DAT – xlsx");
 
   // Hide/show the three filter toggles depending on context
-  ["opt-remove","opt-nooverwrite","opt-onlychanges"].forEach(id => {
-    document.getElementById(id).style.display = isInitialLoad ? "none" : "";
+  const filterIds = ["opt-remove","opt-nooverwrite","opt-onlychanges","merge-gender-sep"];
+  filterIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isInitialLoad ? "none" : "";
   });
-  mergeOptRemove = false; mergeOptNoOverwrite = false; mergeOptOnlyChanges = true;
+
+  mergeOptRemove = false; mergeOptNoOverwrite = false; mergeOptOnlyChanges = !isInitialLoad;
   document.getElementById("opt-remove").classList.remove("on");
   document.getElementById("opt-nooverwrite").classList.remove("on");
-  document.getElementById("opt-onlychanges").classList.add("on");
+  const ocEl = document.getElementById("opt-onlychanges");
+  ocEl.classList.toggle("on", mergeOptOnlyChanges);
   document.getElementById("opt-remove").querySelector(".chk").textContent = "☐";
   document.getElementById("opt-nooverwrite").querySelector(".chk").textContent = "☐";
-  document.getElementById("opt-onlychanges").querySelector(".chk").textContent = "☑";
+  ocEl.querySelector(".chk").textContent = mergeOptOnlyChanges ? "☑" : "☐";
+
+  // Reset gender global buttons
+  _updateMergeGenderBtns(null);
+
   // Reset summary badges
   document.getElementById("ms-add").textContent = "+ …";
   document.getElementById("ms-upd").textContent = "~ …";
@@ -2424,8 +2494,9 @@ function openMergeModalShell(incoming, filename, titleOverride, isInitialLoad) {
 function openMergeModal(incoming, filename) {
   mergeIncoming = incoming;
   mergeIncoming._filename = filename;
-  ["opt-remove","opt-nooverwrite","opt-onlychanges"].forEach(id => {
-    document.getElementById(id).style.display = "";
+  ["opt-remove","opt-nooverwrite","opt-onlychanges","merge-gender-sep"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "";
   });
   mergeOptRemove = false; mergeOptNoOverwrite = false; mergeOptOnlyChanges = true;
   document.getElementById("opt-remove").classList.remove("on");
@@ -2434,6 +2505,7 @@ function openMergeModal(incoming, filename) {
   document.getElementById("opt-remove").querySelector(".chk").textContent = "☐";
   document.getElementById("opt-nooverwrite").querySelector(".chk").textContent = "☐";
   document.getElementById("opt-onlychanges").querySelector(".chk").textContent = "☑";
+  _updateMergeGenderBtns(null);
   buildMergeChanges();
   renderMergeTable();
   document.getElementById("merge-overlay").classList.add("open");
@@ -2490,7 +2562,8 @@ function buildMergeChanges() {
     if (!incId) {
       mergeChanges.push({
         type: "ADD", id: "", existing: null, incoming: inc,
-        fields: {}, enabled: false, missingId: true, invalidId: false, idEditable: true
+        fields: {}, enabled: false, missingId: true, invalidId: false, idEditable: true,
+        gender: null
       });
       return;
     }
@@ -2499,7 +2572,8 @@ function buildMergeChanges() {
       // Invalid format or duplicate within import – flag but keep editable
       mergeChanges.push({
         type: "ADD", id: incId, existing: null, incoming: inc,
-        fields: {}, enabled: false, missingId: false, invalidId: true, idEditable: true
+        fields: {}, enabled: false, missingId: false, invalidId: true, idEditable: true,
+        gender: null
       });
       return;
     }
@@ -2507,7 +2581,7 @@ function buildMergeChanges() {
     if (!ex) {
       mergeChanges.push({
         type: "ADD", id: incId, existing: null, incoming: inc,
-        fields: {}, enabled: true
+        fields: {}, enabled: true, gender: null
       });
     } else {
       const changed = {};
@@ -2522,12 +2596,12 @@ function buildMergeChanges() {
       if (hasChanges) {
         mergeChanges.push({
           type: "UPDATE", id: incId, existing: ex, incoming: inc,
-          fields: changed, enabled: true
+          fields: changed, enabled: true, gender: ex.gender || null
         });
       } else {
         mergeChanges.push({
           type: "NOCHANGE", id: incId, existing: ex, incoming: inc,
-          fields: {}, enabled: false
+          fields: {}, enabled: false, gender: ex.gender || null
         });
       }
     }
@@ -2538,7 +2612,7 @@ function buildMergeChanges() {
     if (ex.id && !incomingById[String(ex.id)]) {
       mergeChanges.push({
         type: "REMOVE", id: String(ex.id), existing: ex, incoming: null,
-        fields: {}, enabled: true
+        fields: {}, enabled: true, gender: null
       });
     }
   });
@@ -2574,6 +2648,7 @@ function revalidateEditableIds() {
       });
       if (Object.keys(changed).length > 0) {
         ch.type = "UPDATE"; ch.existing = existingPlayer; ch.fields = changed; ch.enabled = true;
+        if (!ch.gender && existingPlayer.gender) ch.gender = existingPlayer.gender;
       } else {
         ch.type = "NOCHANGE"; ch.existing = existingPlayer; ch.fields = {}; ch.enabled = false;
       }
@@ -2610,7 +2685,7 @@ function renderMergeTable() {
   document.getElementById("merge-apply-count").textContent = `${total} změn bude aplikováno`;
 
   document.getElementById("merge-table-head").innerHTML =
-    `<th>Typ</th><th>ID</th>` + MERGE_COLS.map(c => `<th>${c.label}</th>`).join("") + `<th style="width:30px"></th>`;
+    `<th>Typ</th><th>ID</th>` + MERGE_COLS.map(c => `<th>${c.label}</th>`).join("") + `<th>Pohlaví</th><th style="width:30px"></th>`;
 
   const tbody = document.getElementById("merge-table-body");
   const visible = mergeChanges
@@ -2655,6 +2730,16 @@ function renderMergeTable() {
     }).join("");
     const idReadonly = !ch.idEditable && (ch.type === "NOCHANGE" || (!ch.missingId && !ch.invalidId && ch.type !== "ADD"));
     const indicator = locked ? `<span style="color:#444">—</span>` : ch.enabled ? "✓" : "○";
+
+    const canEditGender = ch.type !== "REMOVE" && !ch.missingId && !ch.invalidId;
+    const genderCell = canEditGender
+      ? `<td onclick="event.stopPropagation()" style="white-space:nowrap;text-align:center;padding:6px 8px">
+          <span class="mg-btn ${ch.gender === 'male'   ? 'mg-male-on'   : 'mg-male-off'}"
+                onclick="toggleMergeRowGender(${ci},'male')">♂</span>
+          <span class="mg-btn ${ch.gender === 'female' ? 'mg-female-on' : 'mg-female-off'}"
+                onclick="toggleMergeRowGender(${ci},'female')">♀</span>
+        </td>`
+      : `<td></td>`;
     return `<tr class="${rowClass}" onclick="toggleMergeRow(${ci})">
       <td><span class="type-badge ${badge}">${label}</span></td>
       <td onclick="event.stopPropagation()">
@@ -2670,6 +2755,7 @@ function renderMergeTable() {
               onblur="renderMergeTable()" />
       </td>
       ${cells}
+      ${genderCell}
       <td style="text-align:center;color:var(--text-muted)">${indicator}</td>
     </tr>`;
   }).join("");
@@ -2685,6 +2771,46 @@ function toggleMergeRow(ci) {
 }
 function toggleMergeCell(event, ci) { event.stopPropagation(); toggleMergeRow(ci); }
 
+function toggleMergeRowGender(ci, gender) {
+  const ch = mergeChanges[ci];
+  if (!ch) return;
+  ch.gender = ch.gender === gender ? null : gender;
+  _updateMergeGenderBtns(_inferGlobalGender());
+  renderMergeTable();
+}
+
+function setAllMergeGender(gender) {
+  mergeChanges.forEach(ch => {
+    if (ch.type !== "REMOVE") ch.gender = gender;
+  });
+  _updateMergeGenderBtns(gender);
+  renderMergeTable();
+}
+
+function _inferGlobalGender() {
+  const actionable = mergeChanges.filter(ch => ch.type !== "REMOVE");
+  if (!actionable.length) return null;
+  const allMale   = actionable.every(ch => ch.gender === 'male');
+  const allFemale = actionable.every(ch => ch.gender === 'female');
+  const allNull   = actionable.every(ch => !ch.gender);
+  if (allMale)   return 'male';
+  if (allFemale) return 'female';
+  if (allNull)   return null;
+  return 'mixed';
+}
+
+function _updateMergeGenderBtns(activeGender) {
+  const btnM = document.getElementById("mga-male");
+  const btnF = document.getElementById("mga-female");
+  const btnN = document.getElementById("mga-none");
+  if (!btnM) return;
+  btnM.classList.toggle("mga-male-on",   activeGender === 'male');
+  btnM.classList.remove("mga-female-on");
+  btnF.classList.toggle("mga-female-on", activeGender === 'female');
+  btnF.classList.remove("mga-male-on");
+  btnN.classList.toggle("mga-none-on",   !activeGender || activeGender === 'mixed' || activeGender === null);
+}
+
 function applyMerge() {
   const filename = mergeIncoming._filename || "";
   const maxUid = players.reduce((m, p) => Math.max(m, p._uid ?? 0), 0);
@@ -2696,10 +2822,13 @@ function applyMerge() {
     return true;
   }).forEach(ch => {
     if (ch.type === "ADD") {
-      players.push({ ...ch.incoming, _uid: uidCounter++, clubActive: true, comment: "" });
+      players.push({ ...ch.incoming, gender: ch.gender ?? null, _uid: uidCounter++, clubActive: true, comment: "" });
     } else if (ch.type === "UPDATE") {
       const idx = players.findIndex(p => p.id === ch.id);
-      if (idx >= 0) MERGE_FIELDS.forEach(f => { players[idx][f] = ch.incoming[f]; });
+      if (idx >= 0) {
+        MERGE_FIELDS.forEach(f => { players[idx][f] = ch.incoming[f]; });
+        players[idx].gender = ch.gender ?? players[idx].gender ?? null;
+      }
     } else if (ch.type === "REMOVE") {
       players = players.filter(p => p.id !== ch.id);
     }
