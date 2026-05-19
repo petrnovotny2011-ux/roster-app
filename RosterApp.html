@@ -788,6 +788,21 @@
       margin-bottom: 10px;
     }
 
+    /* ── STICKY COLUMNS (Příjmení · Jméno) ── */
+    #members-table td.sc-surname,
+    #members-table th.sc-surname  { position: sticky; left: 0;     z-index: 1; min-width: 130px; }
+    #members-table td.sc-fname,
+    #members-table th.sc-fname    { position: sticky; left: 130px; z-index: 1; min-width: 110px;
+                                    box-shadow: 4px 0 8px -2px rgba(0,0,0,.45); }
+
+    #members-table thead th.sc-surname,
+    #members-table thead th.sc-fname  { z-index: 3; background: var(--bg3); }
+
+    #members-table tbody tr td.sc-surname,
+    #members-table tbody tr td.sc-fname   { background: var(--bg2); }
+    #members-table tbody tr:hover td.sc-surname,
+    #members-table tbody tr:hover td.sc-fname { background: var(--bg3); }
+
     /* ── SCROLLBAR global ── */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -1579,7 +1594,7 @@
 <script>
 
 const APP = {
-  version: "1.0.3"
+  version: "1.0.4"
 };
 
 /* ══════════════════════════════════════════════════════
@@ -2230,8 +2245,9 @@ function renderFilterTags() {
    TABLE
 ══════════════════════════════════════════════════════ */
 const COLUMNS = [
-  { field: "id",             label: "ID" },  { field: "surname",        label: "Příjmení" },
-  { field: "firstname",      label: "Jméno" },
+  { field: "id",             label: "ID" },
+  { field: "surname",        label: "Příjmení", stickyClass: "sc-surname" },
+  { field: "firstname",      label: "Jméno",    stickyClass: "sc-fname"   },
   { field: "birthYear",      label: "Rok nar." },
   { field: "category",       label: "Kategorie" },
   { field: "guestClubName",  label: "Hostuje v" },
@@ -2245,8 +2261,9 @@ const COLUMNS = [
 function renderTableHead() {
   const tr = document.getElementById("table-head");
   tr.innerHTML = COLUMNS.map(col => {
-    const cls = sortField === col.field ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
-    return `<th class="${cls}" onclick="sortBy('${col.field}')">${col.label}</th>`;
+    const sortCls = sortField === col.field ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
+    const stickyCls = col.stickyClass ? " " + col.stickyClass : "";
+    return `<th class="${sortCls}${stickyCls}" onclick="sortBy('${col.field}')">${col.label}</th>`;
   }).join("") + `<th style="width:110px"></th>`;
 }
 
@@ -2307,8 +2324,8 @@ function renderTable(data) {
 
     return `<tr>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text-muted)">${esc(p.id)}</td>
-      <td><strong>${esc(p.surname)}</strong></td>
-      <td>${esc(p.firstname)}</td>
+      <td class="sc-surname"><strong>${esc(p.surname)}</strong></td>
+      <td class="sc-fname">${esc(p.firstname)}</td>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:.8rem">${p.birthYear || "—"}</td>
       <td>${catBadge}</td>
       <td style="color:var(--text-dim);font-size:.78rem">${esc(p.guestClubName)}</td>
