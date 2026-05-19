@@ -861,6 +861,7 @@
     }
     .edit-input:focus { border-color: var(--green); }
     .edit-input[readonly] { opacity: .5; cursor: not-allowed; }
+    .edit-input[type="date"] { color-scheme: dark; cursor: pointer; }
     .edit-textarea {
       resize: vertical; min-height: 60px; font-family: 'IBM Plex Sans', sans-serif;
     }
@@ -1035,6 +1036,24 @@
       background: var(--accent-18); color: var(--accent);
       border-color: var(--accent);
     }
+
+    /* ── QUICK FILTER PHOTO ── */
+    #filter-photo-btn {
+      font-family: 'IBM Plex Mono', monospace; font-size: .68rem; font-weight: 600;
+      padding: 4px 11px; border-radius: 3px; cursor: pointer; letter-spacing: .04em;
+      border: 1px solid var(--warning-30); background: transparent;
+      color: var(--text-muted); transition: all .15s; white-space: nowrap;
+    }
+    #filter-photo-btn:hover { color: var(--warning); border-color: var(--warning); }
+    #filter-photo-btn.on {
+      background: var(--warning-18); color: var(--warning);
+      border-color: var(--warning);
+    }
+
+    /* ── PHOTO VALIDITY CELL ── */
+    .photo-ok      { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--text-dim); }
+    .photo-expiring{ font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--warning); font-weight: 600; }
+    .photo-expired { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--danger);  font-weight: 600; }
 
     /* ── empty filter notice ── */
     #no-results {
@@ -1279,6 +1298,7 @@
       <!-- Filters panel: permanent on desktop, collapsible on mobile -->
       <div id="filters-panel">
         <button id="filter-active-btn" onclick="toggleActiveFilter()" title="Zobrazit pouze aktivní hráče">● hraje</button>
+        <button id="filter-photo-btn" onclick="togglePhotoFilter()" title="Zobrazit hráče s vypršenou nebo expirující fotografií (do 1 měsíce)">📷 foto</button>
         <div class="gender-filter-pair" title="Filtr pohlaví">
           <div class="gender-filter-btn male"   id="gf-male"   onclick="toggleGenderFilter('male')"   title="Muži">♂</div>
           <div class="gender-filter-btn female" id="gf-female" onclick="toggleGenderFilter('female')" title="Ženy">♀</div>
@@ -1297,7 +1317,7 @@
             <tr id="table-head"></tr>
           </thead>
           <tbody id="table-body">
-            <tr><td colspan="13" class="no-data"><span>⚽</span>Nahrajte soubor xlsx se seznamem hráčů.</td></tr>
+            <tr><td colspan="14" class="no-data"><span>⚽</span>Nahrajte soubor xlsx se seznamem hráčů.</td></tr>
           </tbody>
         </table>
         <div id="no-results">Žádní hráči neodpovídají filtru.</div>
@@ -1416,7 +1436,11 @@
         </div>
         <div class="edit-field">
           <label class="edit-label">Člen od</label>
-          <input class="edit-input" id="ef-since" type="text" />
+          <input class="edit-input" id="ef-since" type="date" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Platnost fotografie</label>
+          <input class="edit-input" id="ef-photoValidity" type="date" />
         </div>
         <div class="edit-field full">
           <label class="edit-label">Pohlaví</label>
@@ -1555,7 +1579,7 @@
 <script>
 
 const APP = {
-  version: "1.0.2"
+  version: "1.0.3"
 };
 
 /* ══════════════════════════════════════════════════════
@@ -1609,6 +1633,7 @@ let editingUid = null;
 let filterActiveOnly = false;
 let filterGenderMale   = false;
 let filterGenderFemale = false;
+let filterPhotoExpiring = false;
 let hamburgerOpen = false;
 let filtersPanelOpen = true;
 
@@ -1650,6 +1675,77 @@ function toBool(v) {
   if (!v) return false;
   const s = String(v).trim().toLowerCase();
   return ["1", "true", "ano", "yes", "y"].includes(s);
+}
+
+/* ── DATE HELPERS (timestamps as storage format) ── */
+
+function parseDateToTs(val) {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number') {
+    if (val === 0) return null;
+    // Excel serials are < 200 000; ms timestamps are billions
+    if (val < 200000) {
+      const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+      return isNaN(d.getTime()) ? null : d.getTime();
+    }
+    return val;
+  }
+  const s = String(val).trim();
+  if (!s) return null;
+  const m1 = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (m1) {
+    const d = new Date(parseInt(m1[3]), parseInt(m1[2]) - 1, parseInt(m1[1]));
+    return isNaN(d.getTime()) ? null : d.getTime();
+  }
+  const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m2) {
+    const d = new Date(parseInt(m2[1]), parseInt(m2[2]) - 1, parseInt(m2[3]));
+    return isNaN(d.getTime()) ? null : d.getTime();
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
+
+// Timestamp → "DD.MM.YYYY" for display
+function tsToDisplay(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '';
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+}
+
+// Timestamp → "YYYY-MM-DD" for <input type="date"> value
+function tsToInputVal(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// <input type="date"> "YYYY-MM-DD" → ms timestamp (or null)
+function inputValToTs(yyyymmdd) {
+  if (!yyyymmdd) return null;
+  const m = yyyymmdd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const d = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
+
+// Returns a Date from any stored value (ts, Excel serial, legacy string)
+function parsePhotoDate(val) {
+  const ts = parseDateToTs(val);
+  return ts ? new Date(ts) : null;
+}
+
+// Returns 'expired' | 'expiring' | 'ok' | null
+function getPhotoStatus(val) {
+  const d = parsePhotoDate(val);
+  if (!d) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const monthLater = new Date(today); monthLater.setMonth(monthLater.getMonth() + 1);
+  if (d < today) return 'expired';
+  if (d <= monthLater) return 'expiring';
+  return 'ok';
 }
 
 function getVersion() {
@@ -1791,7 +1887,8 @@ function parsePlayersFromBuffer(arrayBuffer) {
       birthYear:     parseInt(r["Rok narození"] || r["Rok narozeni"] || r["birth_year"] || 0),
       parentClubId, parentClubName, guestClubId, guestClubName,
       active:        toBool(r["Aktivním členem"] || r["active"]),
-      since:         r["Členem od"]  || r["Clenem od"] || "",
+      since:         parseDateToTs(r["Členem od"] || r["Clenem od"] || ""),
+      photoValidity: parseDateToTs(r["Platnost fotografie"] || r["platnost fotografie"] || ""),
       clubActive:    true,
       gender:        null,
       comment:       ""
@@ -2026,6 +2123,14 @@ function toggleGenderFilter(type) {
   updateFilterToggleBadge();
 }
 
+function togglePhotoFilter() {
+  filterPhotoExpiring = !filterPhotoExpiring;
+  const btn = document.getElementById("filter-photo-btn");
+  btn.classList.toggle("on", filterPhotoExpiring);
+  renderTable(getFiltered());
+  updateFilterToggleBadge();
+}
+
 function toggleHamburger() {
   hamburgerOpen = !hamburgerOpen;
   document.getElementById("hamburger-menu").classList.toggle("open", hamburgerOpen);
@@ -2044,7 +2149,7 @@ function toggleFiltersPanel() {
 function updateFilterToggleBadge() {
   const btn = document.getElementById("filters-toggle-btn");
   if (!btn) return;
-  const hasActive = filterActiveOnly || filterGenderMale || filterGenderFemale || selectedCategories.length > 0;
+  const hasActive = filterActiveOnly || filterGenderMale || filterGenderFemale || filterPhotoExpiring || selectedCategories.length > 0;
   btn.classList.toggle("has-active", hasActive);
 }
 
@@ -2062,9 +2167,12 @@ function clearAllFilters() {
   filterActiveOnly = false;
   filterGenderMale = false;
   filterGenderFemale = false;
+  filterPhotoExpiring = false;
   document.getElementById("search-input").value = "";
   const btn = document.getElementById("filter-active-btn");
   if (btn) btn.classList.remove("on");
+  const pbtn = document.getElementById("filter-photo-btn");
+  if (pbtn) pbtn.classList.remove("on");
   renderStatsGrid();
   renderFilterTags();
   renderTable(getFiltered());
@@ -2089,6 +2197,10 @@ function getFiltered() {
       if (!selectedCategories.includes(effectiveCat)) return false;
     }
     if (filterActiveOnly && p.clubActive === false) return false;
+    if (filterPhotoExpiring) {
+      const st = getPhotoStatus(p.photoValidity);
+      if (st !== 'expired' && st !== 'expiring') return false;
+    }
     if (filterGenderMale || filterGenderFemale) {
       if (filterGenderMale && filterGenderFemale) {
         if (p.gender !== 'male' && p.gender !== 'female') return false;
@@ -2126,6 +2238,7 @@ const COLUMNS = [
   { field: "active",         label: "FAČR" },
   { field: "clubActive",     label: "Aktivní" },
   { field: "gender",         label: "Pohlaví" },
+  { field: "photoValidity",  label: "Platnost foto" },
   { field: "comment",        label: "Poznámka" }
 ];
 
@@ -2149,9 +2262,11 @@ function renderTable(data) {
     let va = sortField === "category" ? (getCategory(a.birthYear, currentSeason) ?? "") : (a[sortField] ?? "");
     let vb = sortField === "category" ? (getCategory(b.birthYear, currentSeason) ?? "") : (b[sortField] ?? "");
     if (typeof va === "number" && typeof vb === "number") return sortDir === "asc" ? va - vb : vb - va;
+    if (typeof va === "number") return sortDir === "asc" ? -1 : 1;
+    if (typeof vb === "number") return sortDir === "asc" ?  1 : -1;
     va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
     if (va < vb) return sortDir === "asc" ? -1 : 1;
-    if (va > vb) return sortDir === "asc" ? 1 : -1;
+    if (va > vb) return sortDir === "asc" ?  1 : -1;
     return 0;
   });
 
@@ -2159,7 +2274,7 @@ function renderTable(data) {
   const noRes = document.getElementById("no-results");
 
   if (players.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="13" class="no-data"><span>⚽</span>Nahrajte soubor xlsx se seznamem hráčů.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="14" class="no-data"><span>⚽</span>Nahrajte soubor xlsx se seznamem hráčů.</td></tr>`;
     noRes.style.display = "none";
     return;
   }
@@ -2208,6 +2323,7 @@ function renderTable(data) {
       </td>
       <td>${clubActiveBtn}</td>
       <td>${p.gender ? `<span style="color:${p.gender === 'male' ? 'var(--blue)' : 'var(--red)'}">${p.gender === 'male' ? '♂' : '♀'}</span>` : "—"}</td>
+      <td>${renderPhotoCell(p.photoValidity)}</td>
       <td class="comment-cell">${commentCell}</td>
       ${actions}
     </tr>`;
@@ -2216,6 +2332,15 @@ function renderTable(data) {
 
 function esc(s) {
   return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderPhotoCell(val) {
+  if (!val) return `<span style="color:var(--text-muted)">—</span>`;
+  const display = tsToDisplay(parseDateToTs(val)) || String(val);
+  const status = getPhotoStatus(val);
+  if (status === 'expired')  return `<span class="photo-expired" title="Fotografie vypršela">${esc(display)}</span>`;
+  if (status === 'expiring') return `<span class="photo-expiring" title="Fotografie brzy vyprší">${esc(display)}</span>`;
+  return `<span class="photo-ok">${esc(display)}</span>`;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2269,7 +2394,8 @@ function openEditModal(uid) {
   document.getElementById("ef-guestClubName").value   = p.guestClubName  || "";
   document.getElementById("ef-guestClubId").value     = p.guestClubId  || "";
   document.getElementById("ef-active").checked        = p.active === true;
-  document.getElementById("ef-since").value           = p.since      || "";
+  document.getElementById("ef-since").value           = tsToInputVal(parseDateToTs(p.since));
+  document.getElementById("ef-photoValidity").value   = tsToInputVal(parseDateToTs(p.photoValidity));
   document.getElementById("ef-comment").value         = p.comment    || "";
 
   // reset UI
@@ -2299,14 +2425,12 @@ function toggleGender(el) {
   const value = el.dataset.value;
   const hidden = document.getElementById("ef-gender");
 
-  // pokud kliknu na aktivní → vypnout (neuvedeno)
   if (el.classList.contains("active")) {
     el.classList.remove("active");
     hidden.value = "";
     return;
   }
 
-  // jinak aktivuji tento a vypnu druhý
   document.querySelectorAll(".gender-option").forEach(opt => opt.classList.remove("active"));
   el.classList.add("active");
   hidden.value = value;
@@ -2329,7 +2453,8 @@ function saveEditModal() {
   p.guestClubName   = document.getElementById("ef-guestClubName").value.trim();
   p.guestClubId     = document.getElementById("ef-guestClubId").value.trim();
   p.active          = document.getElementById("ef-active").checked;
-  p.since           = document.getElementById("ef-since").value.trim();
+  p.since           = inputValToTs(document.getElementById("ef-since").value);
+  p.photoValidity   = inputValToTs(document.getElementById("ef-photoValidity").value);
   p.comment         = document.getElementById("ef-comment").value;
   p.clubActive      = document.getElementById("ef-clubActive").checked;
   p.gender          = document.getElementById("ef-gender").value;
@@ -2352,7 +2477,7 @@ function exportPlayers() {
 
   const payload = {
     type: "rosterapp.players",
-    version: "1.0",
+    version: "1.1",
 
     players: players.map(({ _uid, ...p }) => p)
   };
@@ -2384,6 +2509,7 @@ function importPlayers(event) {
       const imported = JSON.parse(e.target.result);
 
       let importedPlayers = [];
+      let fileVersion = null;
 
       // structured format
       if (
@@ -2393,11 +2519,11 @@ function importPlayers(event) {
         typeof imported.version === "string" &&
         Array.isArray(imported.players)
       ) {
-
+        fileVersion = imported.version;
         importedPlayers = imported.players;
 
       }
-      // legacy format
+      // legacy format (plain array, no version)
       else if (Array.isArray(imported)) {
 
         importedPlayers = imported;
@@ -2405,6 +2531,18 @@ function importPlayers(event) {
       }
       else {
         throw new Error("invalid roster format");
+      }
+
+      // ── Migration: v1.0 and legacy → v1.1 ──
+      // v1.0 stored `since` as a plain string and had no `photoValidity`.
+      // v1.1 stores both as ms timestamps. Migrate any older data transparently.
+      const needsMigration = fileVersion === null || fileVersion === "1.0";
+      if (needsMigration) {
+        importedPlayers = importedPlayers.map(p => ({
+          ...p,
+          since:         parseDateToTs(p.since ?? "") ?? null,
+          photoValidity: parseDateToTs(p.photoValidity ?? "") ?? null,
+        }));
       }
 
       players = importedPlayers.map((p, i) => ({
@@ -2437,7 +2575,7 @@ function importPlayers(event) {
    MERGE MODAL
 ══════════════════════════════════════════════════════ */
 const MERGE_FIELDS = ["surname","firstname","birthYear","parentClubId","parentClubName",
-                      "guestClubId","guestClubName","active","since"];
+                      "guestClubId","guestClubName","active","since","photoValidity"];
 const MERGE_COLS = [
   { field:"surname",        label:"Příjmení" },
   { field:"firstname",      label:"Jméno" },
@@ -2448,6 +2586,7 @@ const MERGE_COLS = [
   { field:"guestClubId",    label:"(ID)" },
   { field:"active",         label:"FAČR" },
   { field:"since",          label:"Člen od" },
+  { field:"photoValidity",  label:"Platnost foto" },
 ];
 
 function openMergeModalShell(incoming, filename, titleOverride, isInitialLoad) {
@@ -2717,6 +2856,10 @@ function renderMergeTable() {
     const src = ch.type === "REMOVE" ? ch.existing : ch.incoming;
     const fmtVal = (v, field) => {
       if (field === "active") return v === true || v === "true" ? "Ano" : v === false || v === "false" ? "Ne" : String(v ?? "");
+      if (field === "since" || field === "photoValidity") {
+        const ts = parseDateToTs(v);
+        return ts ? tsToDisplay(ts) : (v ? String(v) : "");
+      }
       return String(v ?? "");
     };
     const cells = MERGE_COLS.map(col => {
