@@ -6,6 +6,18 @@ Zobrazuje počty hráčů dle věkových kategorií pro různé ročníky soutě
 
 ---
 
+### Ochrana osobních údajů
+
+ROSTERapp je distribuován **bez jakýchkoliv dat**.
+Veškerá data zadaná do aplikace jsou uložena výhradně v prohlížeči uživatele (*localStorage*)
+a **nejsou nikam odesílána** ani přístupná třetím stranám.
+
+Autor nástroje nemá k uloženým datům žádný přístup a nenese odpovědnost za způsob jejich zpracování.
+Uživatel (resp. klub) vystupuje v roli **správce osobních údajů**
+ve smyslu GDPR a je odpovědný za soulad s příslušnou legislativou.
+
+---
+
 ### Obecné funkce
 - U každého hráče lze jednoduše měnit **aktivní stav**, nebo přidat poznámku.
 - Hráče lze filtrovat podle:

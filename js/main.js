@@ -176,6 +176,21 @@ function closeSupportModal() {
 }
 
 /* ══════════════════════════════════════════════════════
+   INFO / ABOUT MODAL
+══════════════════════════════════════════════════════ */
+function openInfoModal() {
+  document.getElementById("info-version").textContent = `${getVersion()}`;
+  const src = document.querySelector("#header .logo-icon");
+  const dst = document.querySelector("#info-overlay .logo-icon");
+  if (src && dst) dst.innerHTML = src.innerHTML;
+  document.getElementById("info-overlay").classList.add("open");
+}
+
+function closeInfoModal() {
+  document.getElementById("info-overlay").classList.remove("open");
+}
+
+/* ══════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════ */
 function init() {
@@ -196,7 +211,6 @@ function init() {
     } catch { players = []; }
   }
 
-  document.getElementById("app-version").textContent = getVersion();
   loadIcon();
 
   renderSeasonTabs();
@@ -1535,6 +1549,9 @@ document.getElementById("edit-overlay").addEventListener("click", e => {
 });
 document.getElementById("merge-overlay").addEventListener("click", e => {
   if (e.target === document.getElementById("merge-overlay")) closeMergeModal();
+});
+document.getElementById("info-overlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("info-overlay")) closeInfoModal();
 });
 
 document.addEventListener("click", e => {

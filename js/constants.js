@@ -1,5 +1,5 @@
 const APP = {
-  version: "1.0.5"
+  version: "1.0.6"
 };
 
 const CAT_COLORS = ["#3a9c3a","#2980b9","#8e44ad","#c0392b","#d35400","#16a085","#f39c12"];

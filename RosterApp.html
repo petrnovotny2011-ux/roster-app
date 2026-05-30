@@ -111,8 +111,10 @@
     </div>
 
     <footer id="footer">
-      <span id="app-version" style="margin-right: auto; padding-left: 20px;"></span>
-      <span>RosterApp &copy; 2026 | <a href="https://github.com/petrnovotny2011-ux/roster-app#" target="_blank">Petr Novotný</a></span>
+      <span style="margin-right:auto;padding-left:20px;">
+        <button onclick="openInfoModal()" title="O aplikaci" style="background:none;border:none;color:var(--text-muted);font-family:var(--font-mono);font-size:0.72rem;cursor:pointer;padding:2px 6px;border-radius:3px;border:1px solid var(--border);transition:all .15s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text-muted)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">ℹ info</button>
+      </span>
+      <span>RosterApp &copy; 2026 | <a href="https://github.com/petrnovotny2011-ux" target="_blank">Petr Novotný</a></span>
       <span class="support-link" style="margin-left: auto; padding-right: 20px;"><button class="btn" style="color: white; font-weight: bolder; background-color: var(--blue);" onclick="openSupportModal()">Podpoř mě</button></span>
     </footer>
   </div><!-- /main -->
@@ -334,6 +336,72 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     INFO / ABOUT MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="info-overlay">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h2>ℹ O APLIKACI</h2>
+      <button class="modal-close" onclick="closeInfoModal()">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- App identity -->
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="logo-icon" style="width:36px;height:36px;" aria-hidden="true"></span>
+        <div>
+          <div style="font-family:var(--font-mono);font-size:1.1rem;font-weight:600;color:var(--text);letter-spacing:.08em;">ROSTERapp</div>
+          <div style="font-family:var(--font-mono);font-size:.72rem;color:var(--text-muted);margin-top:2px;" id="info-version"></div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="font-size:.85rem;color:var(--text-dim);line-height:1.6;">
+        Jednoduchý nástroj pro správu FAČR soupisky se zaměřením na mládež.
+        Zobrazuje počty hráčů dle věkových kategorií pro různé ročníky soutěží.
+      </div>
+
+      <!-- Key features -->
+      <div>
+        <div class="section-label" style="margin-bottom:8px;">Funkce</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:.8rem;color:var(--text-dim);">
+          <span>↑ Import xlsx z IS FAČR</span>
+          <span>⇄ Sloučení / porovnání dat</span>
+          <span>⚙ Editor věkových kategorií</span>
+          <span>↓ Export &amp; import JSON</span>
+          <span>♂♀ Filtr pohlaví &amp; aktivity</span>
+          <span>📷 Sledování platnosti fotek</span>
+        </div>
+      </div>
+
+      <!-- GDPR -->
+      <div style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:4px;padding:14px 16px;">
+        <div class="section-label" style="margin-bottom:8px;color:var(--accent);">Ochrana osobních údajů (GDPR)</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.65;">
+          ROSTERapp je distribuován <strong style="color:var(--text)">bez jakýchkoliv dat</strong>.
+          Veškerá data zadaná do aplikace jsou uložena výhradně v prohlížeči uživatele (<em>localStorage</em>)
+          a <strong style="color:var(--text)">nejsou nikam odesílána</strong> ani přístupná třetím stranám.<br /><br />
+          Autor nástroje nemá k uloženým datům žádný přístup a nenese odpovědnost za způsob jejich zpracování.
+          Uživatel (resp. klub) vystupuje v roli <strong style="color:var(--text)">správce osobních údajů</strong>
+          ve smyslu GDPR a je odpovědný za soulad s příslušnou legislativou.
+        </div>
+      </div>
+
+      <!-- Author / links -->
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--text-muted);">
+        <span>© 2026 <a href="https://github.com/petrnovotny2011-ux" target="_blank" style="color:var(--text-muted);text-decoration:underline;">Petr Novotný</a></span>
+        <a href="https://github.com/petrnovotny2011-ux/roster-app" target="_blank" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);text-decoration:none;border:1px solid var(--border);padding:3px 9px;border-radius:3px;">GitHub ↗</a>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <div style="flex:1"></div>
+      <button class="btn btn-secondary" onclick="closeInfoModal()">Zavřít</button>
+    </div>
   </div>
 </div>
 
