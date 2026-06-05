@@ -64,11 +64,6 @@ let mergeOptOnlyChanges = true;
 /* ══════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════ */
-function toBool(v) {
-  if (!v) return false;
-  const s = String(v).trim().toLowerCase();
-  return ["1", "true", "ano", "yes", "y"].includes(s);
-}
 
 /* ── DATE HELPERS (timestamps as storage format) ── */
 
@@ -1542,26 +1537,26 @@ function clearAllData() {
    CLICK OUTSIDE MODAL TO CLOSE
 ══════════════════════════════════════════════════════ */
 document.getElementById("editor-overlay").addEventListener("click", e => {
-  if (e.target === document.getElementById("editor-overlay")) closeEditor();
-});
+      if (e.target === document.getElementById("editor-overlay")) closeEditor();
+    });
 document.getElementById("edit-overlay").addEventListener("click", e => {
-  if (e.target === document.getElementById("edit-overlay")) closeEditModal();
-});
+      if (e.target === document.getElementById("edit-overlay")) closeEditModal();
+    });
 document.getElementById("merge-overlay").addEventListener("click", e => {
-  if (e.target === document.getElementById("merge-overlay")) closeMergeModal();
-});
+      if (e.target === document.getElementById("merge-overlay")) closeMergeModal();
+    });
 document.getElementById("info-overlay").addEventListener("click", e => {
-  if (e.target === document.getElementById("info-overlay")) closeInfoModal();
-});
+      if (e.target === document.getElementById("info-overlay")) closeInfoModal();
+    });
 
-document.addEventListener("click", e => {
-  if (hamburgerOpen &&
-      !e.target.closest("#hamburger-menu") &&
-      !e.target.closest("#hamburger-btn")) {
-    closeHamburger();
-  }
-});
+  document.addEventListener("click", e => {
+    if (hamburgerOpen &&
+        !e.target.closest("#hamburger-menu") &&
+        !e.target.closest("#hamburger-btn")) {
+      closeHamburger();
+    }
+  });
 /* ══════════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════════ */
-init();
+  init();
